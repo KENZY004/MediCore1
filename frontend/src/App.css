@@ -1,0 +1,89 @@
+.home {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+}
+
+.welcome-card {
+    background: white;
+    border-radius: 16px;
+    padding: 3rem;
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+    max-width: 800px;
+    width: 100%;
+}
+
+.welcome-card h2 {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.welcome-card>p {
+    font-size: 1.1rem;
+    color: var(--text-light);
+    margin-bottom: 2rem;
+}
+
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 2rem;
+    margin: 2rem 0;
+}
+
+.feature {
+    padding: 1.5rem;
+    background: var(--light-bg);
+    border-radius: 12px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.feature .icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.feature h3 {
+    font-size: 1rem;
+    color: var(--text-dark);
+}
+
+.status {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--border-color);
+}
+
+.status-badge {
+    display: inline-block;
+    background: var(--warning-color);
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .welcome-card {
+        padding: 2rem;
+    }
+
+    .features {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .app-header h1 {
+        font-size: 1.8rem;
+    }
+}
