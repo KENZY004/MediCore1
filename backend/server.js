@@ -4,9 +4,13 @@ const cors = require('cors');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const rateLimit = require('express-rate-limit');
+const connectDB = require('./config/database');
 
 // Load environment variables
 dotenv.config();
+
+// Connect to MongoDB
+connectDB();
 
 // Initialize express app
 const app = express();
@@ -39,19 +43,32 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/health', (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'MediCore API is running',
+    message: 'ZenoCare API is running',
     timestamp: new Date().toISOString(),
   });
 });
 
-// API routes will be added here
+// Import routes
+// Import routes
+const authRoutes = require('./routes/authRoutes');
+const hospitalRoutes = require('./routes/hospitalRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+
+// API routes
+// API routes
 app.get('/api', (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'Welcome to MediCore Hospital Management System API',
+    message: 'Welcome to ZenoCare Hospital Management System API',
     version: '1.0.0',
+    description: 'B2B Hospital Management Platform'
   });
 });
+
+// Mount routes
+app.use('/api/auth', authRoutes);
+app.use('/api/hospitals', hospitalRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 404 handler
 app.use((req, res) => {

@@ -1,10 +1,10 @@
 # MediCore Hospital Management System
 
-> Advanced Hospital Management System built with MERN Stack
+> B2B Hospital Management Platform built with MERN Stack
 
 ## 🏥 Project Overview
 
-MediCore is a comprehensive hospital management system designed to streamline hospital operations including patient management, appointment scheduling, medical reporting, billing, and automated notifications.
+MediCore is a **B2B hospital management platform** designed for hospitals to manage their internal operations. The system allows hospitals to register on the platform and use it as their comprehensive management system for patients, doctors, appointments, staff, and departments. An admin oversees the entire platform and manages hospital registrations.
 
 ## 🚀 Technology Stack
 
@@ -22,27 +22,41 @@ MediCore is a comprehensive hospital management system designed to streamline ho
 - MongoDB (with Mongoose)
 - JWT Authentication
 - Nodemailer (Email notifications)
-- Razorpay (Payment gateway)
 - PDFKit (PDF generation)
 - express-validator (Input validation)
 
 ## 👥 User Roles
 
-- **Admin**: Manage users, doctors, view analytics
-- **Doctor**: View appointments, create reports, issue prescriptions
-- **Reception**: Register patients, book appointments
-- **Patient**: View appointments, medical history, pay bills
+### **Admin** (Platform Administrator)
+- Approve/reject hospital registrations
+- Manage hospital accounts (activate/deactivate)
+- View system-wide analytics
+- Monitor platform usage
+
+### **Hospital** (Hospital Staff)
+- Register hospital on the platform
+- Manage patient records
+- Manage doctor profiles and schedules
+- Schedule appointments (internal)
+- Manage staff members
+- Manage departments
+- Generate reports and analytics
+- Handle internal billing
 
 ## ✨ Key Features
 
 - 🔐 JWT-based authentication with role-based access control
-- 📅 Appointment scheduling and management
-- 📊 Dashboard analytics with interactive charts
+- 🏥 Hospital registration and approval workflow
+- 👥 Patient management (by hospital)
+- 👨‍⚕️ Doctor management and scheduling
+- 📅 Internal appointment scheduling
+- 👔 Staff management
+- 🏢 Department management
+- 📊 Hospital-specific and system-wide analytics
 - 📧 Automated email notifications
-- 💳 Online payment integration (Razorpay)
-- 📄 PDF generation for prescriptions and bills
+- 📄 PDF generation for reports and prescriptions
 - 🔍 Advanced search, filtering, and pagination
-- 🔒 Secure password reset functionality
+- 🔒 Data isolation (hospitals only see their own data)
 - 📱 Responsive design
 
 ## 📁 Project Structure
@@ -107,28 +121,42 @@ EMAIL_PORT=587
 EMAIL_USER=your_email@gmail.com
 EMAIL_PASSWORD=your_app_password
 
-# Razorpay Payment Gateway
-RAZORPAY_KEY_ID=your_razorpay_key_id
-RAZORPAY_KEY_SECRET=your_razorpay_key_secret
-
 # Frontend URL (update when deployed)
 CLIENT_URL=http://localhost:5173
 ```
 
-> **Note:** All services (database, email, payments) use cloud-based solutions for seamless deployment.
+> **Note:** All services (database, email) use cloud-based solutions for seamless deployment.
 
 ## 🎯 Development Roadmap
 
+### Phase 1: Core Setup
 - [x] Project setup and configuration
-- [ ] Authentication system
-- [ ] Patient management
-- [ ] Appointment system
-- [ ] Medical reports
-- [ ] Billing and payments
-- [ ] Email notifications
-- [ ] Dashboard analytics
+- [ ] Database schema design
+- [ ] Authentication system (Admin + Hospital)
+
+### Phase 2: Hospital & Admin Features
+- [ ] Hospital registration and approval workflow
+- [ ] Admin dashboard (hospital management)
+- [ ] Hospital dashboard (overview)
+
+### Phase 3: Hospital Internal Management
+- [ ] Patient management (by hospital)
+- [ ] Doctor management and scheduling
+- [ ] Appointment system (internal)
+- [ ] Staff management
+- [ ] Department management
+
+### Phase 4: Advanced Features
+- [ ] Medical reports and prescriptions
 - [ ] PDF generation
-- [ ] Testing and deployment
+- [ ] Email notifications
+- [ ] Analytics dashboards
+- [ ] Search and filtering
+
+### Phase 5: Deployment
+- [ ] Testing and bug fixes
+- [ ] Documentation
+- [ ] Deployment to cloud
 
 ## 👨‍💻 Developer
 

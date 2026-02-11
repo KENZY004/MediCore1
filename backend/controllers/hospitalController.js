@@ -1,0 +1,272 @@
+const Hospital = require('../models/Hospital');
+const jwt = require('jsonwebtoken');
+
+// Generate JWT Token
+const generateToken = (id) => {
+    return jwt.sign({ id, type: 'hospital' }, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRE || '7d'
+    });
+};
+
+// @desc    Register a new hospital
+// @route   POST /api/hospitals/register
+// @access  Public
+exports.registerHospital = async (req, res) => {
+    try {
+        const {
+            name,
+            registrationNumber,
+            licenseNumber,
+            email,
+            password,
+            phone,
+            address,
+            adminContact,
+            type,
+            totalBeds,
+            specializations,
+            website,
+            description
+        } = req.body;
+
+        // Check if hospital already exists
+        const existingHospital = await Hospital.findOne({
+            $or: [{ email }, { registrationNumber }, { licenseNumber }]
+        });
+
+        if (existingHospital) {
+            return res.status(400).json({
+                success: false,
+                message: 'Hospital with this email, registration number, or license number already exists'
+            });
+        }
+
+        // Create hospital
+        const hospital = await Hospital.create({
+            name,
+            registrationNumber,
+            licenseNumber,
+            email,
+            password,
+            phone,
+            address,
+            adminContact,
+            type,
+            totalBeds,
+            specializations,
+            website,
+            description,
+            status: 'pending' // Requires admin approval
+        });
+
+        res.status(201).json({
+            success: true,
+            message: 'Hospital registration submitted successfully. Awaiting admin approval.',
+            data: {
+                hospital: hospital.getPublicProfile()
+            }
+        });
+    } catch (error) {
+        console.error('Hospital registration error:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Error registering hospital'
+        });
+    }
+};
+
+// @desc    Login hospital
+// @route   POST /api/hospitals/login
+// @access  Public
+exports.loginHospital = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        // Validate input
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide email and password'
+            });
+        }
+
+        // Find hospital and include password
+        const hospital = await Hospital.findOne({ email }).select('+password');
+
+        if (!hospital) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid credentials'
+            });
+        }
+
+        // Check if hospital is approved
+        if (hospital.status !== 'approved') {
+            return res.status(403).json({
+                success: false,
+                message: `Your hospital registration is ${hospital.status}. Please contact admin.`
+            });
+        }
+
+        // Check if hospital is active
+        if (!hospital.isActive) {
+            return res.status(403).json({
+                success: false,
+                message: 'Your hospital account has been deactivated. Please contact admin.'
+            });
+        }
+
+        // Check password
+        const isPasswordMatch = await hospital.comparePassword(password);
+
+        if (!isPasswordMatch) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid credentials'
+            });
+        }
+
+        // Generate token
+        const token = generateToken(hospital._id);
+
+        res.status(200).json({
+            success: true,
+            message: 'Login successful',
+            data: {
+                token,
+                hospital: hospital.getPublicProfile()
+            }
+        });
+    } catch (error) {
+        console.error('Hospital login error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error logging in'
+        });
+    }
+};
+
+// @desc    Get hospital profile
+// @route   GET /api/hospitals/profile
+// @access  Private (Hospital)
+exports.getHospitalProfile = async (req, res) => {
+    try {
+        const hospital = await Hospital.findById(req.hospital.id);
+
+        if (!hospital) {
+            return res.status(404).json({
+                success: false,
+                message: 'Hospital not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: {
+                hospital: hospital.getPublicProfile()
+            }
+        });
+    } catch (error) {
+        console.error('Get hospital profile error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching hospital profile'
+        });
+    }
+};
+
+// @desc    Update hospital profile
+// @route   PUT /api/hospitals/profile
+// @access  Private (Hospital)
+exports.updateHospitalProfile = async (req, res) => {
+    try {
+        const allowedUpdates = [
+            'name', 'phone', 'address', 'adminContact', 'type',
+            'totalBeds', 'specializations', 'website', 'description'
+        ];
+
+        const updates = {};
+        Object.keys(req.body).forEach(key => {
+            if (allowedUpdates.includes(key)) {
+                updates[key] = req.body[key];
+            }
+        });
+
+        const hospital = await Hospital.findByIdAndUpdate(
+            req.hospital.id,
+            updates,
+            { new: true, runValidators: true }
+        );
+
+        if (!hospital) {
+            return res.status(404).json({
+                success: false,
+                message: 'Hospital not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Hospital profile updated successfully',
+            data: {
+                hospital: hospital.getPublicProfile()
+            }
+        });
+    } catch (error) {
+        console.error('Update hospital profile error:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Error updating hospital profile'
+        });
+    }
+};
+
+// @desc    Change hospital password
+// @route   PUT /api/hospitals/change-password
+// @access  Private (Hospital)
+exports.changePassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide current and new password'
+            });
+        }
+
+        const hospital = await Hospital.findById(req.hospital.id).select('+password');
+
+        if (!hospital) {
+            return res.status(404).json({
+                success: false,
+                message: 'Hospital not found'
+            });
+        }
+
+        // Verify current password
+        const isMatch = await hospital.comparePassword(currentPassword);
+
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                message: 'Current password is incorrect'
+            });
+        }
+
+        // Update password
+        hospital.password = newPassword;
+        await hospital.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Password changed successfully'
+        });
+    } catch (error) {
+        console.error('Change password error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error changing password'
+        });
+    }
+};
