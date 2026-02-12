@@ -10,15 +10,14 @@ const {
 } = require('../controllers/receptionController');
 const { getReceptionStats } = require('../controllers/dashboardController');
 
-// All routes are protected and for Receptionists only
-router.use(protect);
-router.use(allow('Receptionist'));
+// Shared routes (Read-only for Hospital Admin)
+router.get('/stats', protect, allow('Receptionist', 'receptionist', 'hospital_admin'), getReceptionStats);
+router.get('/patients', protect, allow('Receptionist', 'receptionist', 'hospital_admin'), getAllPatients);
+router.get('/patients/search', protect, allow('Receptionist', 'receptionist', 'hospital_admin'), searchPatients);
+router.get('/doctors', protect, allow('Receptionist', 'receptionist', 'hospital_admin'), getDoctors);
 
-router.get('/stats', getReceptionStats);
-router.get('/patients', getAllPatients);
-router.post('/patients', registerPatient);
-router.get('/patients/search', searchPatients);
-router.get('/doctors', getDoctors);
-router.post('/appointments', bookAppointment);
+// Receptionist Only (Write access)
+router.post('/patients', protect, allow('Receptionist', 'receptionist'), registerPatient);
+router.post('/appointments', protect, allow('Receptionist', 'receptionist'), bookAppointment);
 
 module.exports = router;

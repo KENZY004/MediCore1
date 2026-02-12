@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { FaUsers, FaSearch, FaEllipsisV } from 'react-icons/fa';
 
-function PatientList() {
+function PatientList({ readOnly = false }) {
     const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -56,13 +56,13 @@ function PatientList() {
                                 <th style={{ padding: '1rem', textAlign: 'left' }}>Name</th>
                                 <th style={{ padding: '1rem', textAlign: 'left' }}>Age/Gender</th>
                                 <th style={{ padding: '1rem', textAlign: 'left' }}>Contact</th>
-                                <th style={{ padding: '1rem', textAlign: 'center' }}>Actions</th>
+                                {!readOnly && <th style={{ padding: '1rem', textAlign: 'center' }}>Actions</th>}
                             </tr>
                         </thead>
                         <tbody>
                             {filteredPatients.length === 0 ? (
                                 <tr>
-                                    <td colSpan="5" style={{ padding: '2rem', textAlign: 'center', color: '#777' }}>No patients found.</td>
+                                    <td colSpan={readOnly ? 4 : 5} style={{ padding: '2rem', textAlign: 'center', color: '#777' }}>No patients found.</td>
                                 </tr>
                             ) : (
                                 filteredPatients.map((patient) => (
@@ -74,11 +74,13 @@ function PatientList() {
                                             <div>{patient.phone}</div>
                                             <div style={{ fontSize: '0.8rem', color: '#888' }}>{patient.email}</div>
                                         </td>
-                                        <td style={{ padding: '1rem', textAlign: 'center' }}>
-                                            <button className="btn-sm" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#555' }}>
-                                                <FaEllipsisV />
-                                            </button>
-                                        </td>
+                                        {!readOnly && (
+                                            <td style={{ padding: '1rem', textAlign: 'center' }}>
+                                                <button className="btn-sm" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#555' }}>
+                                                    <FaEllipsisV />
+                                                </button>
+                                            </td>
+                                        )}
                                     </tr>
                                 ))
                             )}

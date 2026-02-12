@@ -187,3 +187,27 @@ exports.getDoctors = async (req, res) => {
         });
     }
 };
+
+// @desc    Get all patients
+// @route   GET /api/reception/patients
+// @access  Private (Receptionist)
+exports.getAllPatients = async (req, res) => {
+    try {
+        const hospitalId = req.user.hospitalId;
+        const patients = await Patient.find({ hospitalId })
+            .select('firstName lastName age gender phone email patientId lastVisit')
+            .sort({ createdAt: -1 });
+
+        res.status(200).json({
+            success: true,
+            count: patients.length,
+            data: patients
+        });
+    } catch (error) {
+        console.error('Get all patients error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching patients'
+        });
+    }
+};

@@ -1,27 +1,29 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
-import { FaUserMd, FaUserNurse, FaPlus, FaSearch } from 'react-icons/fa';
+import { FaUserMd, FaUserNurse, FaPlus, FaEdit, FaTrash, FaTimes } from 'react-icons/fa';
 
 function StaffManagement() {
     const [staffList, setStaffList] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
-    const [formData, setFormData] = useState({
-        role: 'Doctor', // Default
+    const [editingId, setEditingId] = useState(null); // Track if editing
+
+    const initialFormState = {
+        role: 'Doctor',
         firstName: '',
         lastName: '',
         email: '',
         phone: '',
         password: '',
-        // Doctor specific
         specialization: '',
         qualification: '',
         experience: '',
         licenseNumber: '',
-        // Staff specific
-        departmentId: '', // Optional for now
+        departmentId: '',
         employeeId: ''
-    });
+    };
+
+    const [formData, setFormData] = useState(initialFormState);
 
     useEffect(() => {
         fetchStaff();
@@ -44,88 +46,236 @@ function StaffManagement() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    const handleEdit = (staff) => {
+        setEditingId(staff._id);
+        setFormData({
+            role: staff.role,
+            firstName: staff.firstName,
+            lastName: staff.lastName,
+            email: staff.email,
+            phone: staff.phone,
+            password: '', // Leave blank to keep unchanged
+            specialization: staff.specialization || '',
+            qualification: staff.qualification || '',
+            experience: staff.experience || '',
+            licenseNumber: staff.licenseNumber || '',
+            employeeId: staff.employeeId || ''
+        });
+        setShowModal(true);
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm('Are you sure you want to remove this staff member?')) return;
+        try {
+            const { data } = await api.delete(`/hospital/staff/${id}`);
+            if (data.success) {
+                alert('Staff member removed.');
+                fetchStaff();
+            }
+        } catch (error) {
+            alert(error.response?.data?.message || 'Error deleting staff');
+        }
+    };
+
+    const openAddModal = () => {
+        setEditingId(null);
+        setFormData(initialFormState);
+        setShowModal(true);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const { data } = await api.post('/hospital/staff', formData);
-            if (data.success) {
-                alert('Staff added successfully');
+            let response;
+            if (editingId) {
+                // Update
+                response = await api.put(`/hospital/staff/${editingId}`, formData);
+            } else {
+                // Create
+                response = await api.post('/hospital/staff', formData);
+            }
+
+            if (response.data.success) {
+                alert(editingId ? 'Staff updated successfully' : 'Staff added successfully');
                 setShowModal(false);
-                fetchStaff(); // Refresh list
-                setFormData({ ...formData, firstName: '', lastName: '', email: '', password: '' }); // Reset partial
+                fetchStaff();
+                setFormData(initialFormState);
             }
         } catch (error) {
-            alert(error.response?.data?.message || 'Error adding staff');
+            alert(error.response?.data?.message || 'Error saving staff');
         }
     };
+
+    // Styling Constants
+    const btnPrimaryStyle = {
+        background: 'var(--primary-blue)',
+        color: 'white',
+        border: 'none',
+        padding: '10px 20px',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        fontWeight: '500',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+    };
+
+    const btnActionStyle = (color) => ({
+        background: 'transparent',
+        border: 'none',
+        color: color,
+        cursor: 'pointer',
+        fontSize: '1rem',
+        padding: '5px'
+    });
+
+    const avatarStyle = (isDoctor) => ({
+        width: '36px',
+        height: '36px',
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#fff',
+        fontSize: '14px',
+        fontWeight: '600',
+        background: isDoctor ? '#0056b3' : '#00796b', // Darker shades manually
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+    });
 
     return (
         <div className="staff-management">
             <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <h2>Manage Staff</h2>
-                <button className="btn-primary" onClick={() => setShowModal(true)}>
+                <button style={btnPrimaryStyle} onClick={openAddModal}>
                     <FaPlus /> Add New Staff
                 </button>
             </div>
 
             {loading ? <p>Loading staff...</p> : (
-                <div className="table-container">
-                    <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead>
-                            <tr style={{ background: '#f8f9fa', textAlign: 'left' }}>
-                                <th style={{ padding: '1rem' }}>Name</th>
-                                <th style={{ padding: '1rem' }}>Role</th>
-                                <th style={{ padding: '1rem' }}>Email</th>
-                                <th style={{ padding: '1rem' }}>Phone</th>
-                                <th style={{ padding: '1rem' }}>Joined</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {staffList.map((staff) => (
-                                <tr key={staff._id} style={{ borderBottom: '1px solid #eee' }}>
-                                    <td style={{ padding: '1rem' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            <div className={`avatar-initials ${staff.type === 'doctor' ? 'bg-blue' : 'bg-green'}`}
-                                                style={{ width: '35px', height: '35px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '14px' }}>
-                                                {staff.firstName[0]}{staff.lastName[0]}
-                                            </div>
-                                            {staff.type === 'doctor' ? `Dr. ${staff.firstName} ${staff.lastName}` : `${staff.firstName} ${staff.lastName}`}
-                                        </div>
-                                    </td>
-                                    <td style={{ padding: '1rem' }}>
-                                        <span className={`status-badge ${staff.type === 'doctor' ? 'active' : 'pending'}`} style={{ padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>
-                                            {staff.role}
-                                        </span>
-                                    </td>
-                                    <td style={{ padding: '1rem' }}>{staff.email}</td>
-                                    <td style={{ padding: '1rem' }}>{staff.phone}</td>
-                                    <td style={{ padding: '1rem' }}>{new Date(staff.createdAt).toLocaleDateString()}</td>
-                                </tr>
-                            ))}
-                            {staffList.length === 0 && (
-                                <tr>
-                                    <td colSpan="5" style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>No staff found. Add your first team member!</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                <div className="staff-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '2rem' }}>
+                    {/* Doctors Column */}
+                    <div>
+                        <h3 style={{ marginBottom: '1rem', color: '#2c3e50', borderBottom: '2px solid #3498db', paddingBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <FaUserMd style={{ color: '#3498db' }} /> Doctors
+                        </h3>
+                        <div className="table-container" style={{ background: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+                            <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr style={{ background: '#f8f9fa', textAlign: 'left', borderBottom: '1px solid #eee' }}>
+                                        <th style={{ padding: '1rem' }}>Name</th>
+                                        <th style={{ padding: '1rem' }}>Specialization</th>
+                                        <th style={{ padding: '1rem' }}>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {staffList.filter(s => s.role === 'Doctor').map((staff) => (
+                                        <tr key={staff._id} style={{ borderBottom: '1px solid #eee' }}>
+                                            <td style={{ padding: '1rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                    <div style={avatarStyle(true)}>
+                                                        {staff.firstName[0]}{staff.lastName[0]}
+                                                    </div>
+                                                    <div>
+                                                        <div style={{ fontWeight: '600', color: '#333' }}>Dr. {staff.firstName} {staff.lastName}</div>
+                                                        <div style={{ fontSize: '0.85rem', color: '#666' }}>{staff.phone}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td style={{ padding: '1rem', color: '#555' }}>{staff.specialization || 'General'}</td>
+                                            <td style={{ padding: '1rem' }}>
+                                                <div style={{ display: 'flex', gap: '8px' }}>
+                                                    <button style={btnActionStyle('#f39c12')} title="Edit" onClick={() => handleEdit(staff)}><FaEdit /></button>
+                                                    <button style={btnActionStyle('#e74c3c')} title="Delete" onClick={() => handleDelete(staff._id)}><FaTrash /></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {staffList.filter(s => s.role === 'Doctor').length === 0 && (
+                                        <tr><td colSpan="3" style={{ padding: '2rem', textAlign: 'center', color: '#888' }}>No doctors found.</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* Other Staff Column */}
+                    <div>
+                        <h3 style={{ marginBottom: '1rem', color: '#2c3e50', borderBottom: '2px solid #27ae60', paddingBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <FaUserNurse style={{ color: '#27ae60' }} /> Support Staff
+                        </h3>
+                        <div className="table-container" style={{ background: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+                            <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr style={{ background: '#f8f9fa', textAlign: 'left', borderBottom: '1px solid #eee' }}>
+                                        <th style={{ padding: '1rem' }}>Name</th>
+                                        <th style={{ padding: '1rem' }}>Role</th>
+                                        <th style={{ padding: '1rem' }}>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {staffList.filter(s => s.role !== 'Doctor').map((staff) => (
+                                        <tr key={staff._id} style={{ borderBottom: '1px solid #eee' }}>
+                                            <td style={{ padding: '1rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                    <div style={avatarStyle(false)}>
+                                                        {staff.firstName[0]}{staff.lastName[0]}
+                                                    </div>
+                                                    <div>
+                                                        <div style={{ fontWeight: '600', color: '#333' }}>{staff.firstName} {staff.lastName}</div>
+                                                        <div style={{ fontSize: '0.85rem', color: '#666' }}>{staff.phone}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td style={{ padding: '1rem' }}>
+                                                <span className="status-badge" style={{
+                                                    background: '#e8f5e9', color: '#2e7d32',
+                                                    padding: '4px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase'
+                                                }}>
+                                                    {staff.role}
+                                                </span>
+                                            </td>
+                                            <td style={{ padding: '1rem' }}>
+                                                <div style={{ display: 'flex', gap: '8px' }}>
+                                                    <button style={btnActionStyle('#f39c12')} title="Edit" onClick={() => handleEdit(staff)}><FaEdit /></button>
+                                                    <button style={btnActionStyle('#e74c3c')} title="Delete" onClick={() => handleDelete(staff._id)}><FaTrash /></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {staffList.filter(s => s.role !== 'Doctor').length === 0 && (
+                                        <tr><td colSpan="3" style={{ padding: '2rem', textAlign: 'center', color: '#888' }}>No support staff found.</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             )}
 
-            {/* Simple Modal for Adding Staff */}
+            {/* Modal */}
             {showModal && (
                 <div className="modal-overlay" style={{
                     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000
+                    backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000,
+                    backdropFilter: 'blur(2px)'
                 }}>
                     <div className="modal-content" style={{
-                        backgroundColor: '#fff', padding: '2rem', borderRadius: '8px', width: '500px', maxHeight: '90vh', overflowY: 'auto'
+                        backgroundColor: '#fff', padding: '2rem', borderRadius: '12px', width: '500px', maxHeight: '90vh', overflowY: 'auto',
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
                     }}>
-                        <h3>Add New Staff Member</h3>
-                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <h3 style={{ margin: 0, color: '#333' }}>{editingId ? 'Edit Staff Member' : 'Add New Staff Member'}</h3>
+                            <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#999' }}>
+                                <FaTimes />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                             <div className="form-group">
-                                <label>Role Type</label>
-                                <select name="role" value={formData.role} onChange={handleInputChange} style={{ width: '100%', padding: '0.5rem' }}>
+                                <label style={{ fontSize: '0.9rem', color: '#555', marginBottom: '0.3rem', display: 'block' }}>Role Type</label>
+                                <select name="role" value={formData.role} onChange={handleInputChange} style={{ width: '100%', padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px' }} disabled={!!editingId}>
                                     <option value="Doctor">Doctor</option>
                                     <option value="Nurse">Nurse</option>
                                     <option value="Receptionist">Receptionist</option>
@@ -135,30 +285,36 @@ function StaffManagement() {
                             </div>
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleInputChange} required style={{ padding: '0.5rem' }} />
-                                <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleInputChange} required style={{ padding: '0.5rem' }} />
+                                <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleInputChange} required style={{ padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px' }} />
+                                <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleInputChange} required style={{ padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px' }} />
                             </div>
 
-                            <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleInputChange} required style={{ padding: '0.5rem' }} />
-                            <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleInputChange} required style={{ padding: '0.5rem' }} />
-                            <input type="text" name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleInputChange} required style={{ padding: '0.5rem' }} />
+                            <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleInputChange} required style={{ padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px' }} />
+
+                            {!editingId && (
+                                <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleInputChange} required style={{ padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px' }} />
+                            )}
+
+                            <input type="text" name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleInputChange} required style={{ padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px' }} />
 
                             {formData.role === 'Doctor' && (
                                 <>
-                                    <input type="text" name="specialization" placeholder="Specialization (e.g. Cardiology)" value={formData.specialization} onChange={handleInputChange} style={{ padding: '0.5rem' }} />
-                                    <input type="text" name="qualification" placeholder="Qualification (e.g. MBBS)" value={formData.qualification} onChange={handleInputChange} style={{ padding: '0.5rem' }} />
-                                    <input type="number" name="experience" placeholder="Years of Experience" value={formData.experience} onChange={handleInputChange} style={{ padding: '0.5rem' }} />
-                                    <input type="text" name="licenseNumber" placeholder="License Number" value={formData.licenseNumber} onChange={handleInputChange} style={{ padding: '0.5rem' }} />
+                                    <input type="text" name="specialization" placeholder="Specialization (e.g. Cardiology)" value={formData.specialization} onChange={handleInputChange} style={{ padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px' }} />
+                                    <input type="text" name="qualification" placeholder="Qualification (e.g. MBBS)" value={formData.qualification} onChange={handleInputChange} style={{ padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px' }} />
+                                    <input type="number" name="experience" placeholder="Years of Experience" value={formData.experience} onChange={handleInputChange} style={{ padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px' }} />
+                                    <input type="text" name="licenseNumber" placeholder="License Number" value={formData.licenseNumber} onChange={handleInputChange} style={{ padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px' }} />
                                 </>
                             )}
 
                             {formData.role !== 'Doctor' && (
-                                <input type="text" name="employeeId" placeholder="Employee ID (Optional)" value={formData.employeeId} onChange={handleInputChange} style={{ padding: '0.5rem' }} />
+                                <input type="text" name="employeeId" placeholder="Employee ID (Optional)" value={formData.employeeId} onChange={handleInputChange} style={{ padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px' }} />
                             )}
 
                             <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                                <button type="submit" className="btn-primary" style={{ flex: 1 }}>Add Staff</button>
-                                <button type="button" className="btn-secondary" onClick={() => setShowModal(false)} style={{ flex: 1, padding: '0.5rem', background: '#eee', border: 'none', cursor: 'pointer' }}>Cancel</button>
+                                <button type="submit" style={{ ...btnPrimaryStyle, flex: 1, justifyContent: 'center' }}>
+                                    {editingId ? 'Update Staff' : 'Add Staff'}
+                                </button>
+                                <button type="button" onClick={() => setShowModal(false)} style={{ flex: 1, padding: '0.6rem', background: '#f8f9fa', border: '1px solid #ddd', borderRadius: '6px', cursor: 'pointer', color: '#666', fontWeight: '500' }}>Cancel</button>
                             </div>
                         </form>
                     </div>

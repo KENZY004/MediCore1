@@ -15,6 +15,7 @@ import DoctorAppointments from '../components/DoctorAppointments';
 import PatientRegistration from '../components/PatientRegistration';
 import BookAppointment from '../components/BookAppointment';
 import PatientList from '../components/PatientList';
+import HospitalProfile from '../components/HospitalProfile';
 
 function HospitalDashboard() {
     const { user, logout } = useAuth();
@@ -181,10 +182,18 @@ function HospitalDashboard() {
                             {/* Hospital Admin View */}
                             {hasRole(['hospital_admin']) && (
                                 <div className="stats-grid">
-                                    <StatCard title="Total Staff" value={stats.totalStaff || 0} icon={<FaUserMd />} bgClass="bg-blue" />
-                                    <StatCard title="Total Patients" value={stats.totalPatients || 0} icon={<FaUsers />} bgClass="bg-green" />
-                                    <StatCard title="Total Revenue" value={`$${stats.totalRevenue || 0}`} icon={<FaFileInvoiceDollar />} bgClass="bg-purple" />
-                                    <StatCard title="Total Appointments" value={stats.totalAppointments || 0} icon={<FaCalendarCheck />} bgClass="bg-orange" />
+                                    <div onClick={() => setActiveTab('staff')} style={{ cursor: 'pointer' }}>
+                                        <StatCard title="Total Staff" value={stats.totalStaff || 0} icon={<FaUserMd />} bgClass="bg-blue" />
+                                    </div>
+                                    <div onClick={() => setActiveTab('patient-list')} style={{ cursor: 'pointer' }}>
+                                        <StatCard title="Total Patients" value={stats.totalPatients || 0} icon={<FaUsers />} bgClass="bg-green" />
+                                    </div>
+                                    <div onClick={() => setActiveTab('billing')} style={{ cursor: 'pointer' }}>
+                                        <StatCard title="Total Revenue" value={`$${stats.totalRevenue || 0}`} icon={<FaFileInvoiceDollar />} bgClass="bg-purple" />
+                                    </div>
+                                    <div onClick={() => setActiveTab('appointments')} style={{ cursor: 'pointer' }}>
+                                        <StatCard title="Total Appointments" value={stats.totalAppointments || 0} icon={<FaCalendarCheck />} bgClass="bg-orange" />
+                                    </div>
                                 </div>
                             )}
 
@@ -250,14 +259,14 @@ function HospitalDashboard() {
                     {activeTab === 'appointments' && <DoctorAppointments />}
                     {activeTab === 'patients' && <div><h2>My Patients - Coming Soon</h2></div>}
 
-                    {activeTab === 'profile' && <div><h2>Hospital Profile - Coming Soon</h2></div>}
+                    {activeTab === 'profile' && <HospitalProfile />}
 
                     {activeTab === 'register-patient' && <PatientRegistration onSuccess={(data) => {
                         // Optional: Auto-switch to book appointment with this patient
                         // For now, just stay on page or show success
                     }} />}
                     {activeTab === 'book-appointment' && <BookAppointment />}
-                    {activeTab === 'patient-list' && <PatientList />}
+                    {activeTab === 'patient-list' && <PatientList readOnly={hasRole(['hospital_admin'])} />}
 
                 </div>
             </main>

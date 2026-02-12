@@ -8,7 +8,9 @@ const {
     updateHospitalProfile,
     changePassword,
     getAllStaff,
-    addStaff
+    addStaff,
+    updateStaff,
+    deleteStaff
 } = require('../controllers/hospitalController');
 const { getHospitalStats } = require('../controllers/dashboardController');
 
@@ -23,5 +25,7 @@ router.put('/change-password', protect, hospitalOnly, changePassword);
 router.get('/stats', protect, hospitalOnly, getHospitalStats);
 router.get('/staff', protect, hospitalOnly, getAllStaff);
 router.post('/staff', protect, hospitalOnly, addStaff);
+router.put('/staff/:id', protect, hospitalOnly, updateStaff);
+router.delete('/staff/:id', protect, hospitalOnly, deleteStaff);
 
 module.exports = router;

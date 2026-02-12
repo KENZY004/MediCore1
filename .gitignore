@@ -30,7 +30,12 @@ Thumbs.db
 
 # Logs
 logs/
+# Documentation
+implementation_plan.md
+task.md
+todo.md
 *.log
+
 
 # Testing
 coverage/

@@ -153,7 +153,7 @@ exports.loginHospital = async (req, res) => {
 // @access  Private (Hospital)
 exports.getHospitalProfile = async (req, res) => {
     try {
-        const hospital = await Hospital.findById(req.hospital.id);
+        const hospital = await Hospital.findById(req.user.id);
 
         if (!hospital) {
             return res.status(404).json({
@@ -195,7 +195,7 @@ exports.updateHospitalProfile = async (req, res) => {
         });
 
         const hospital = await Hospital.findByIdAndUpdate(
-            req.hospital.id,
+            req.user.id,
             updates,
             { new: true, runValidators: true }
         );
@@ -237,7 +237,7 @@ exports.changePassword = async (req, res) => {
             });
         }
 
-        const hospital = await Hospital.findById(req.hospital.id).select('+password');
+        const hospital = await Hospital.findById(req.user.id).select('+password');
 
         if (!hospital) {
             return res.status(404).json({
@@ -278,7 +278,7 @@ exports.changePassword = async (req, res) => {
 // @access  Private (Hospital)
 exports.getAllStaff = async (req, res) => {
     try {
-        const hospitalId = req.hospital.id;
+        const hospitalId = req.user.id;
 
         const doctors = await Doctor.find({ hospitalId }).select('-password');
         const staff = await Staff.find({ hospitalId }).select('-password');
@@ -307,7 +307,7 @@ exports.getAllStaff = async (req, res) => {
 exports.addStaff = async (req, res) => {
     try {
         const { role, password, ...data } = req.body;
-        const hospitalId = req.hospital.id;
+        const hospitalId = req.user.id;
 
         // Basic validation
         if (!data.email || !password || !data.firstName || !data.lastName) {
@@ -370,6 +370,106 @@ exports.addStaff = async (req, res) => {
         res.status(500).json({
             success: false,
             message: error.message || 'Error adding staff member'
+        });
+    }
+};
+
+// @desc    Update staff member
+// @route   PUT /api/hospital/staff/:id
+// @access  Private (Hospital)
+exports.updateStaff = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updates = req.body;
+        const hospitalId = req.user.id;
+
+        // Try to find in Doctor collection first
+        let staff = await Doctor.findOne({ _id: id, hospitalId });
+        let type = 'Doctor';
+
+        if (!staff) {
+            // Try Staff collection
+            staff = await Staff.findOne({ _id: id, hospitalId });
+            type = 'Staff';
+        }
+
+        if (!staff) {
+            return res.status(404).json({
+                success: false,
+                message: 'Staff member not found'
+            });
+        }
+
+        // Prevent changing email to an existing one
+        if (updates.email && updates.email !== staff.email) {
+            const existingDoctor = await Doctor.findOne({ email: updates.email });
+            const existingStaff = await Staff.findOne({ email: updates.email });
+            if (existingDoctor || existingStaff) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Email already in use'
+                });
+            }
+        }
+
+        // Update fields
+        Object.keys(updates).forEach(key => {
+            // Avoid updating immutable fields or password directly here if strictly validated
+            if (key !== '_id' && key !== 'hospitalId' && key !== 'password') {
+                staff[key] = updates[key];
+            }
+        });
+
+        await staff.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Staff updated successfully',
+            data: staff
+        });
+
+    } catch (error) {
+        console.error('Update staff error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error updating staff'
+        });
+    }
+};
+
+// @desc    Delete staff member
+// @route   DELETE /api/hospital/staff/:id
+// @access  Private (Hospital)
+exports.deleteStaff = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const hospitalId = req.user.id;
+
+        // Try Doctor
+        let result = await Doctor.findOneAndDelete({ _id: id, hospitalId });
+
+        if (!result) {
+            // Try Staff
+            result = await Staff.findOneAndDelete({ _id: id, hospitalId });
+        }
+
+        if (!result) {
+            return res.status(404).json({
+                success: false,
+                message: 'Staff member not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Staff member removed successfully'
+        });
+
+    } catch (error) {
+        console.error('Delete staff error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error removing staff'
         });
     }
 };
