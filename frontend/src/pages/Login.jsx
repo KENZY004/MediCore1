@@ -36,11 +36,12 @@ function Login() {
                 const { user, token } = response.data;
                 login(user, token);
 
-                // Redirect based on user type
-                if (user.userType === 'admin') {
-                    navigate('/admin/dashboard');
+                // Redirect based on user role
+                if (user.role === 'super_admin' || user.role === 'admin') {
+                    navigate('/super-admin/dashboard');
                 } else {
-                    navigate('/hospital/dashboard');
+                    // All hospital staff (Admin, Doctor, Receptionist, etc.) go to same dashboard
+                    navigate('/dashboard');
                 }
             }
         } catch (err) {

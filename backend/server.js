@@ -30,7 +30,11 @@ app.use('/api/', limiter);
 // CORS configuration
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:5175',
+      process.env.CLIENT_URL
+    ].filter(Boolean),
     credentials: true,
   })
 );
@@ -48,12 +52,6 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Import routes
-// Import routes
-const authRoutes = require('./routes/authRoutes');
-const hospitalRoutes = require('./routes/hospitalRoutes');
-const adminRoutes = require('./routes/adminRoutes');
-
 // API routes
 // API routes
 app.get('/api', (req, res) => {
@@ -66,9 +64,12 @@ app.get('/api', (req, res) => {
 });
 
 // Mount routes
-app.use('/api/auth', authRoutes);
-app.use('/api/hospitals', hospitalRoutes);
-app.use('/api/admin', adminRoutes);
+// Mount routes
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/hospital', require('./routes/hospitalRoutes')); // Note: singular 'hospital' to match other refs, or check frontend
+app.use('/api/doctor', require('./routes/doctorRoutes'));
+app.use('/api/reception', require('./routes/receptionRoutes'));
 
 // 404 handler
 app.use((req, res) => {

@@ -6,8 +6,11 @@ const {
     loginHospital,
     getHospitalProfile,
     updateHospitalProfile,
-    changePassword
+    changePassword,
+    getAllStaff,
+    addStaff
 } = require('../controllers/hospitalController');
+const { getHospitalStats } = require('../controllers/dashboardController');
 
 // Public routes
 router.post('/register', registerHospital);
@@ -17,5 +20,8 @@ router.post('/login', loginHospital);
 router.get('/profile', protect, hospitalOnly, getHospitalProfile);
 router.put('/profile', protect, hospitalOnly, updateHospitalProfile);
 router.put('/change-password', protect, hospitalOnly, changePassword);
+router.get('/stats', protect, hospitalOnly, getHospitalStats);
+router.get('/staff', protect, hospitalOnly, getAllStaff);
+router.post('/staff', protect, hospitalOnly, addStaff);
 
 module.exports = router;

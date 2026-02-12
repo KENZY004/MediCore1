@@ -1,147 +1,274 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import api from '../utils/api';
 import {
-    FaSignOutAlt, FaHospital, FaEnvelope,
-    FaUsers, FaUserMd, FaCalendarAlt, FaBuilding,
-    FaChartLine, FaCheckCircle, FaClock
+    FaSignOutAlt, FaHospital, FaUserMd,
+    FaCalendarCheck, FaChartPie, FaPlus,
+    FaSearch, FaBell, FaUsers, FaUserPlus,
+    FaFileInvoiceDollar, FaNotesMedical
 } from 'react-icons/fa';
 import './Dashboard.css';
+
+import StaffManagement from '../components/StaffManagement';
 
 function HospitalDashboard() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const [activeTab, setActiveTab] = useState('dashboard');
 
     const handleLogout = () => {
         logout();
-        navigate('/');
+        navigate('/login');
     };
 
+    const currentDate = new Date().toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    // Helper to check roles
+    const hasRole = (roles) => {
+        if (!user || !user.role) return false;
+        return roles.includes(user.role);
+    };
+
+    const [stats, setStats] = useState({
+        totalStaff: 0,
+        totalPatients: 0,
+        totalRevenue: 0,
+        totalAppointments: 0,
+        doctorCount: 0,
+        nurseCount: 0,
+        todayAppointments: 0,
+        pendingReports: 0,
+        newPatients: 0
+    });
+    const [loadingStats, setLoadingStats] = useState(true);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                let endpoint = '';
+                // Check role and decide endpoint
+                // Note: user.role is from context, might be 'hospital_admin', 'doctor', 'receptionist'
+                if (hasRole(['hospital_admin'])) endpoint = '/hospital/stats';
+                else if (hasRole(['doctor'])) endpoint = '/doctor/stats';
+                else if (hasRole(['receptionist'])) endpoint = '/reception/stats';
+
+                if (endpoint) {
+                    const { data } = await api.get(endpoint);
+                    if (data.success) {
+                        setStats(prev => ({ ...prev, ...data.data }));
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to fetch dashboard stats", error);
+            } finally {
+                setLoadingStats(false);
+            }
+        };
+
+        if (user) fetchStats();
+    }, [user]);
+
     return (
-        <div className="dashboard-container">
-            <div className="dashboard-header">
-                <div className="branding">
-                    <img src="/LogoNew.png" alt="ZenoCare Logo" className="dashboard-logo" style={{ height: '70px', marginRight: '15px', objectFit: 'contain' }} />
+        <div className="dashboard-layout">
+            {/* Sidebar */}
+            <aside className="sidebar">
+                <div className="sidebar-header">
+                    <img src="/LogoNew.png" alt="Logo" className="brand-logo" />
+                    <span className="brand-text">ZenoCare</span>
                 </div>
-                <div className="header-left">
-                    <h1>Hospital Dashboard</h1>
-                    <p>Manage your hospital operations</p>
+
+                <nav className="nav-menu">
+                    {/* Common for all */}
+                    <button onClick={() => setActiveTab('dashboard')} className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
+                        <FaChartPie className="nav-icon" /> Dashboard
+                    </button>
+
+                    {/* Hospital Admin Links */}
+                    {hasRole(['hospital_admin']) && (
+                        <>
+                            <button onClick={() => setActiveTab('profile')} className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
+                                <FaHospital className="nav-icon" /> Hospital Profile
+                            </button>
+                            <button onClick={() => setActiveTab('staff')} className={`nav-item ${activeTab === 'staff' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
+                                <FaUserMd className="nav-icon" /> Manage Staff
+                            </button>
+                        </>
+                    )}
+
+                    {/* Doctor Links */}
+                    {hasRole(['doctor']) && (
+                        <>
+                            <a href="#" className="nav-item">
+                                <FaCalendarCheck className="nav-icon" /> My Appointments
+                            </a>
+                            <a href="#" className="nav-item">
+                                <FaNotesMedical className="nav-icon" /> My Patients
+                            </a>
+                        </>
+                    )}
+
+                    {/* Receptionist Links */}
+                    {hasRole(['receptionist']) && (
+                        <>
+                            <a href="#" className="nav-item">
+                                <FaUserPlus className="nav-icon" /> Register Patient
+                            </a>
+                            <a href="#" className="nav-item">
+                                <FaCalendarCheck className="nav-icon" /> Book Appointment
+                            </a>
+                        </>
+                    )}
+
+                    {/* Billing Links */}
+                    {hasRole(['billing', 'hospital_admin']) && (
+                        <a href="#" className="nav-item">
+                            <FaFileInvoiceDollar className="nav-icon" /> Billing & Invoices
+                        </a>
+                    )}
+
+                </nav>
+
+                <div className="sidebar-footer">
+                    <div className="user-mini-profile">
+                        <div className="avatar">
+                            {user?.name?.charAt(0) || 'U'}
+                        </div>
+                        <div className="user-details">
+                            <h4>{user?.name}</h4>
+                            <span className="role-badge">{user?.role?.replace('_', ' ')}</span>
+                        </div>
+                        <button onClick={handleLogout} className="btn-icon-only" title="Logout">
+                            <FaSignOutAlt />
+                        </button>
+                    </div>
                 </div>
-                <button onClick={handleLogout} className="btn btn-logout">
-                    <FaSignOutAlt />
-                    Logout
-                </button>
+            </aside>
+
+            {/* Main Content */}
+            <main className="main-content">
+                {/* Top Bar */}
+                <header className="top-bar">
+                    <div className="welcome-text">
+                        <h1>Welcome back, {user?.name}</h1>
+                        <p>{currentDate}</p>
+                    </div>
+
+                    <div className="top-actions">
+                        <div className="role-indicator">
+                            Logged in as: <strong>{user?.role?.replace('_', ' ').toUpperCase()}</strong>
+                        </div>
+                    </div>
+                </header>
+
+                {/* Dashboard Stats - Role Specific */}
+                <div className="dashboard-content-area" style={{ padding: '2rem' }}>
+
+                    {activeTab === 'dashboard' && (
+                        <>
+                            {/* Hospital Admin View */}
+                            {hasRole(['hospital_admin']) && (
+                                <div className="stats-grid">
+                                    <StatCard title="Total Staff" value={stats.totalStaff || 0} icon={<FaUserMd />} bgClass="bg-blue" />
+                                    <StatCard title="Total Patients" value={stats.totalPatients || 0} icon={<FaUsers />} bgClass="bg-green" />
+                                    <StatCard title="Total Revenue" value={`$${stats.totalRevenue || 0}`} icon={<FaFileInvoiceDollar />} bgClass="bg-purple" />
+                                    <StatCard title="Total Appointments" value={stats.totalAppointments || 0} icon={<FaCalendarCheck />} bgClass="bg-orange" />
+                                </div>
+                            )}
+
+                            {/* Doctor View */}
+                            {hasRole(['doctor']) && (
+                                <div className="stats-grid">
+                                    <StatCard title="Today's Appointments" value={stats.todayAppointments || 0} icon={<FaCalendarCheck />} bgClass="bg-blue" />
+                                    <StatCard title="Pending Reports" value={stats.pendingReports || 0} icon={<FaNotesMedical />} bgClass="bg-orange" />
+                                </div>
+                            )}
+
+                            {/* Receptionist View */}
+                            {hasRole(['receptionist']) && (
+                                <div className="stats-grid">
+                                    <StatCard title="New Registrations" value={stats.newPatients || 0} icon={<FaUserPlus />} bgClass="bg-green" />
+                                    <StatCard title="Today's Appointments" value={stats.todayAppointments || 0} icon={<FaCalendarCheck />} bgClass="bg-blue" />
+                                </div>
+                            )}
+
+                            {/* Placeholder for actions */}
+                            <div className="dashboard-section" style={{ marginTop: '2rem' }}>
+                                <div className="section-header">
+                                    <h2>Quick Actions</h2>
+                                </div>
+
+                                <div className="quick-actions">
+                                    {/* Hospital Admin Actions */}
+                                    {hasRole(['hospital_admin']) && (
+                                        <>
+                                            <ActionBtn icon={<FaUserMd />} label="Add Staff" onClick={() => setActiveTab('staff')} />
+                                            <ActionBtn icon={<FaUserPlus />} label="Add Doctor" onClick={() => setActiveTab('staff')} />
+                                            <ActionBtn icon={<FaHospital />} label="Update Profile" onClick={() => setActiveTab('profile')} />
+                                        </>
+                                    )}
+
+                                    {/* Receptionist Actions */}
+                                    {hasRole(['receptionist']) && (
+                                        <>
+                                            <ActionBtn icon={<FaUserPlus />} label="New Patient" />
+                                            <ActionBtn icon={<FaCalendarCheck />} label="Schedule" />
+                                        </>
+                                    )}
+
+                                    {/* Doctor Actions */}
+                                    {hasRole(['doctor']) && (
+                                        <ActionBtn icon={<FaCalendarCheck />} label="Schedule" />
+                                    )}
+
+                                    {/* Billing Actions */}
+                                    {hasRole(['billing', 'hospital_admin']) && (
+                                        <ActionBtn icon={<FaFileInvoiceDollar />} label="New Invoice" />
+                                    )}
+
+                                    {!hasRole(['receptionist', 'billing', 'doctor', 'hospital_admin']) && (
+                                        <p>No specific actions available for your role.</p>
+                                    )}
+                                </div>
+                            </div>
+                        </>
+                    )}
+
+                    {activeTab === 'staff' && <StaffManagement />}
+
+                    {activeTab === 'profile' && <div><h2>Hospital Profile - Coming Soon</h2></div>}
+
+                </div>
+            </main>
+        </div>
+    );
+}
+
+function StatCard({ title, value, icon, bgClass }) {
+    return (
+        <div className="stat-card">
+            <div className="stat-info">
+                <h3>{title}</h3>
+                <div className="stat-value">{value}</div>
             </div>
-
-            <div className="dashboard-content">
-                {/* Profile Card */}
-                <div className="user-info-card">
-                    <div className="card-header">
-                        <FaHospital className="card-icon" />
-                        <h2>Hospital Profile</h2>
-                    </div>
-                    <div className="info-grid">
-                        <div className="info-item">
-                            <div className="info-label">
-                                <FaHospital className="info-icon" />
-                                Hospital Name
-                            </div>
-                            <div className="info-value">{user?.name}</div>
-                        </div>
-                        <div className="info-item">
-                            <div className="info-label">
-                                <FaEnvelope className="info-icon" />
-                                Email
-                            </div>
-                            <div className="info-value">{user?.email}</div>
-                        </div>
-                        <div className="info-item">
-                            <div className="info-label">
-                                <FaBuilding className="info-icon" />
-                                Type
-                            </div>
-                            <div className="info-value">
-                                <span className="role-badge">{user?.type}</span>
-                            </div>
-                        </div>
-                        <div className="info-item">
-                            <div className="info-label">
-                                {user?.status === 'approved' ? <FaCheckCircle className="info-icon success" /> : <FaClock className="info-icon warning" />}
-                                Status
-                            </div>
-                            <div className="info-value">
-                                <span className={`status-badge ${user?.status}`}>{user?.status}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Quick Access Section */}
-                <div className="features-section">
-                    <h3 className="section-title">Quick Access</h3>
-                    <div className="features-grid">
-                        <FeatureCard
-                            icon={FaUsers}
-                            title="Patients"
-                            description="Manage patient records and history"
-                            status="Coming Soon"
-                        />
-                        <FeatureCard
-                            icon={FaUserMd}
-                            title="Doctors"
-                            description="Manage doctor profiles and schedules"
-                            status="Coming Soon"
-                        />
-                        <FeatureCard
-                            icon={FaCalendarAlt}
-                            title="Appointments"
-                            description="Schedule and manage appointments"
-                            status="Coming Soon"
-                        />
-                        <FeatureCard
-                            icon={FaBuilding}
-                            title="Departments"
-                            description="Manage hospital departments"
-                            status="Coming Soon"
-                        />
-                        <FeatureCard
-                            icon={FaUsers}
-                            title="Staff"
-                            description="Manage hospital staff members"
-                            status="Coming Soon"
-                        />
-                        <FeatureCard
-                            icon={FaChartLine}
-                            title="Analytics"
-                            description="View hospital analytics and reports"
-                            status="Coming Soon"
-                        />
-                    </div>
-                </div>
-
-                {/* Info Banner */}
-                <div className="info-banner">
-                    <h4>🚧 Under Development</h4>
-                    <p>
-                        Hospital management features for patients, doctors, and appointments are being developed.
-                    </p>
-                </div>
+            <div className={`stat-icon-bg ${bgClass}`}>
+                {icon}
             </div>
         </div>
     );
 }
 
-function FeatureCard({ icon: Icon, title, description, status }) {
+function ActionBtn({ icon, label, onClick }) {
     return (
-        <div className="feature-card">
-            <div className="feature-icon">
-                <Icon />
-            </div>
-            <h4>{title}</h4>
-            <p>{description}</p>
-            <button className="btn btn-feature" disabled>
-                {status}
-            </button>
-        </div>
+        <button className="action-btn" onClick={onClick}>
+            <span className="action-icon">{icon}</span>
+            <span>{label}</span>
+        </button>
     );
 }
 

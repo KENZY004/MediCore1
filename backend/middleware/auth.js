@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 const Admin = require('../models/Admin');
 const Hospital = require('../models/Hospital');
+const Doctor = require('../models/Doctor');
+const Staff = require('../models/Staff');
 
 // Protect routes - verify JWT token
 exports.protect = async (req, res, next) => {
@@ -23,22 +25,55 @@ exports.protect = async (req, res, next) => {
             // Verify token
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-            // Attach user info to request based on type
-            if (decoded.type === 'admin') {
-                req.admin = { id: decoded.id };
-                req.userType = 'admin';
-            } else if (decoded.type === 'hospital') {
-                req.hospital = { id: decoded.id };
-                req.userType = 'hospital';
+            // Determine which collection to query based on role/type in token
+            let user;
+
+            if (decoded.role === 'super_admin') {
+                // Handle hardcoded super admin or DB admin
+                if (decoded.id === 'super_admin_hardcoded') {
+                    user = {
+                        _id: 'super_admin_hardcoded',
+                        id: 'super_admin_hardcoded',
+                        name: 'Super Admin',
+                        email: 'kenznajeeb@gmail.com',
+                        role: 'super_admin',
+                        userType: 'admin'
+                    };
+                } else {
+                    user = await Admin.findById(decoded.id);
+                }
+            } else if (decoded.role === 'hospital_admin' || decoded.type === 'hospital') {
+                user = await Hospital.findById(decoded.id);
+                if (user) user.role = 'hospital_admin';
+            } else if (decoded.role === 'doctor') {
+                user = await Doctor.findById(decoded.id);
+                if (user) user.role = 'doctor';
             } else {
+                // Check Staff for other roles
+                user = await Staff.findById(decoded.id);
+            }
+
+            if (!user) {
                 return res.status(401).json({
                     success: false,
-                    message: 'Invalid token type'
+                    message: 'User not found or invalid token.'
                 });
+            }
+
+            // Attach user to request
+            req.user = user;
+            req.userType = decoded.type; // Attach userType for legacy compatibility
+
+            // Ensure hospitalId is available
+            if (user.hospitalId) {
+                req.user.hospitalId = user.hospitalId;
+            } else if (decoded.role === 'hospital_admin') {
+                req.user.hospitalId = user._id;
             }
 
             next();
         } catch (error) {
+            console.error('Token verification failed:', error);
             return res.status(401).json({
                 success: false,
                 message: 'Not authorized, token failed'
@@ -53,76 +88,38 @@ exports.protect = async (req, res, next) => {
     }
 };
 
-// Admin only access
-exports.adminOnly = async (req, res, next) => {
-    try {
-        if (req.userType !== 'admin') {
+// Grant access to specific roles
+exports.allow = (...roles) => {
+    return (req, res, next) => {
+        // Normalize role check
+        // req.user.role should be available
+        if (!req.user || !roles.includes(req.user.role)) {
             return res.status(403).json({
                 success: false,
-                message: 'Access denied. Admin only.'
+                message: `User role '${req.user?.role}' is not authorized to access this route`
             });
         }
-
-        // Verify admin exists and is active
-        const admin = await Admin.findById(req.admin.id);
-
-        if (!admin || !admin.isActive) {
-            return res.status(403).json({
-                success: false,
-                message: 'Admin account not found or inactive'
-            });
-        }
-
         next();
-    } catch (error) {
-        console.error('Admin authorization error:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Server error in authorization'
-        });
-    }
+    };
 };
 
-// Hospital only access
-exports.hospitalOnly = async (req, res, next) => {
-    try {
-        if (req.userType !== 'hospital') {
-            return res.status(403).json({
-                success: false,
-                message: 'Access denied. Hospital only.'
-            });
-        }
-
-        // Verify hospital exists, is approved and active
-        const hospital = await Hospital.findById(req.hospital.id);
-
-        if (!hospital) {
-            return res.status(403).json({
-                success: false,
-                message: 'Hospital not found'
-            });
-        }
-
-        if (hospital.status !== 'approved') {
-            return res.status(403).json({
-                success: false,
-                message: 'Hospital not approved'
-            });
-        }
-
-        if (!hospital.isActive) {
-            return res.status(403).json({
-                success: false,
-                message: 'Hospital account is inactive'
-            });
-        }
-
-        next();
-    } catch (error) {
-        console.error('Hospital authorization error:', error);
-        return res.status(500).json({
+// Legacy support wrappers
+exports.adminOnly = (req, res, next) => {
+    if (!req.user || req.user.role !== 'super_admin') {
+        return res.status(403).json({
             success: false,
-            message: 'Server error in authorization'
+            message: 'Access denied. Admin only.'
         });
     }
+    next();
+};
+
+exports.hospitalOnly = (req, res, next) => {
+    if (!req.user || req.user.role !== 'hospital_admin') {
+        return res.status(403).json({
+            success: false,
+            message: 'Access denied. Hospital only.'
+        });
+    }
+    next();
 };

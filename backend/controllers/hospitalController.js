@@ -1,4 +1,6 @@
 const Hospital = require('../models/Hospital');
+const Doctor = require('../models/Doctor');
+const Staff = require('../models/Staff');
 const jwt = require('jsonwebtoken');
 
 // Generate JWT Token
@@ -267,6 +269,107 @@ exports.changePassword = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error changing password'
+        });
+    }
+};
+
+// @desc    Get all doctors and staff
+// @route   GET /api/hospital/staff
+// @access  Private (Hospital)
+exports.getAllStaff = async (req, res) => {
+    try {
+        const hospitalId = req.hospital.id;
+
+        const doctors = await Doctor.find({ hospitalId }).select('-password');
+        const staff = await Staff.find({ hospitalId }).select('-password');
+
+        // Add 'type' field to distinguish in frontend
+        const doctorsWithType = doctors.map(d => ({ ...d.toObject(), type: 'doctor', role: 'Doctor' }));
+        const staffWithType = staff.map(s => ({ ...s.toObject(), type: 'staff' }));
+
+        res.status(200).json({
+            success: true,
+            count: doctors.length + staff.length,
+            data: [...doctorsWithType, ...staffWithType]
+        });
+    } catch (error) {
+        console.error('Get all staff error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching staff list'
+        });
+    }
+};
+
+// @desc    Add new doctor or staff
+// @route   POST /api/hospital/staff
+// @access  Private (Hospital)
+exports.addStaff = async (req, res) => {
+    try {
+        const { role, password, ...data } = req.body;
+        const hospitalId = req.hospital.id;
+
+        // Basic validation
+        if (!data.email || !password || !data.firstName || !data.lastName) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide all required fields'
+            });
+        }
+
+        let newStaff;
+
+        if (role === 'Doctor') {
+            // Check if doctor exists
+            const existingDoctor = await Doctor.findOne({ email: data.email });
+            if (existingDoctor) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Doctor with this email already exists'
+                });
+            }
+
+            // Create Doctor
+            newStaff = await Doctor.create({
+                ...data,
+                password,
+                hospitalId,
+                specialization: data.specialization || 'General Physician', // Default if missing
+                qualification: data.qualification || 'MBBS',
+                experience: data.experience || 0,
+                licenseNumber: data.licenseNumber || `LIC-${Date.now()}` // Temporary fallback
+            });
+        } else {
+            // Check if staff exists
+            const existingStaff = await Staff.findOne({ email: data.email });
+            if (existingStaff) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Staff member with this email already exists'
+                });
+            }
+
+            // Create Staff
+            newStaff = await Staff.create({
+                ...data,
+                password,
+                role,
+                hospitalId,
+                employeeId: data.employeeId || `EMP-${Date.now()}` // Temporary fallback
+            });
+        }
+
+        res.status(201).json({
+            success: true,
+            message: `${role} added successfully`,
+            data: newStaff.getPublicProfile()
+        });
+
+    } catch (error) {
+        console.error('Add staff error:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Error adding staff member'
         });
     }
 };

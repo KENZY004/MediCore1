@@ -38,6 +38,13 @@ const doctorSchema = new mongoose.Schema({
         match: [/^[0-9]{10}$/, 'Please provide a valid 10-digit phone number']
     },
 
+    password: {
+        type: String,
+        required: [true, 'Password is required'],
+        minlength: [6, 'Password must be at least 6 characters'],
+        select: false
+    },
+
     dateOfBirth: {
         type: Date
     },
@@ -142,6 +149,31 @@ const doctorSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+
+const bcrypt = require('bcryptjs');
+
+// Hash password before saving
+doctorSchema.pre('save', async function (next) {
+    if (!this.isModified('password')) {
+        return next();
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+});
+
+// Method to compare password
+doctorSchema.methods.comparePassword = async function (candidatePassword) {
+    return await bcrypt.compare(candidatePassword, this.password);
+};
+
+// Method to get public profile
+doctorSchema.methods.getPublicProfile = function () {
+    const doctor = this.toObject();
+    delete doctor.password;
+    return doctor;
+};
 
 // Index for efficient querying
 doctorSchema.index({ hospitalId: 1, specialization: 1 });

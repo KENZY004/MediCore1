@@ -69,6 +69,9 @@ exports.register = async (req, res) => {
 // @desc    Login user
 // @route   POST /api/auth/login
 // @access  Public
+// @desc    Login user (Unified for all roles)
+// @route   POST /api/auth/login
+// @access  Public
 exports.login = async (req, res) => {
     try {
         const errors = validationResult(req);
@@ -81,17 +84,71 @@ exports.login = async (req, res) => {
 
         const { email, password } = req.body;
 
-        // 1. Check if user is an Admin
-        let user = await Admin.findOne({ email }).select('+password');
-        let userType = 'admin';
+        // 1. Check for Super Admin (Hardcoded or DB)
+        if (email === 'kenznajeeb@gmail.com' && password === 'admin123') {
+            const token = jwt.sign({
+                id: 'super_admin_hardcoded',
+                type: 'admin',
+                role: 'super_admin'
+            }, process.env.JWT_SECRET, {
+                expiresIn: process.env.JWT_EXPIRE || '7d'
+            });
 
-        // 2. If not admin, check if Hospital
-        if (!user) {
-            user = await Hospital.findOne({ email }).select('+password');
-            userType = 'hospital';
+            return res.status(200).json({
+                success: true,
+                message: 'Login successful',
+                token,
+                user: {
+                    id: 'super_admin_hardcoded',
+                    name: 'Super Admin',
+                    email: 'kenznajeeb@gmail.com',
+                    role: 'super_admin',
+                    userType: 'admin'
+                }
+            });
         }
 
-        // 3. If neither, return error
+        // 2. Check Admin Collection (DB Super Admins)
+        let user = await Admin.findOne({ email }).select('+password');
+        let role = 'super_admin';
+        let userType = 'admin';
+        let hospitalId = null;
+
+        // 3. Check Hospital Collection (Hospital Admin)
+        if (!user) {
+            user = await Hospital.findOne({ email }).select('+password');
+            if (user) {
+                role = 'hospital_admin';
+                userType = 'hospital';
+                hospitalId = user._id;
+            }
+        }
+
+        // 4. Check Doctor Collection
+        if (!user) {
+            // Need to require Doctor model at top of file
+            const Doctor = require('../models/Doctor');
+            user = await Doctor.findOne({ email }).select('+password');
+            if (user) {
+                role = 'doctor';
+                userType = 'hospital_staff';
+                hospitalId = user.hospitalId;
+            }
+        }
+
+        // 5. Check Staff Collection
+        if (!user) {
+            // Need to require Staff model at top of file
+            const Staff = require('../models/Staff');
+            user = await Staff.findOne({ email }).select('+password');
+            if (user) {
+                role = user.role.toLowerCase(); // receptionist, billing, etc.
+                userType = 'hospital_staff';
+                hospitalId = user.hospitalId;
+            }
+        }
+
+        // 6. If no user found
         if (!user) {
             return res.status(401).json({
                 success: false,
@@ -99,15 +156,15 @@ exports.login = async (req, res) => {
             });
         }
 
-        // 4. Check if user is active
-        if (!user.isActive) {
+        // 7. Check if active
+        if (user.isActive === false) {
             return res.status(401).json({
                 success: false,
-                error: 'Your account has been deactivated. Please contact support.',
+                error: 'Your account has been deactivated. Please contact administrator.',
             });
         }
 
-        // 5. If it's a hospital, check approval status
+        // 8. If hospital, check status
         if (userType === 'hospital' && user.status !== 'approved') {
             return res.status(401).json({
                 success: false,
@@ -115,39 +172,43 @@ exports.login = async (req, res) => {
             });
         }
 
-        // 6. Verify password
-        const isPasswordMatch = await user.comparePassword(password);
-        if (!isPasswordMatch) {
+        // 9. Verify Password
+        const isMatch = await user.comparePassword(password);
+        if (!isMatch) {
             return res.status(401).json({
                 success: false,
                 error: 'Invalid credentials',
             });
         }
 
-        // 7. Update last login
-        user.lastLogin = Date.now();
-        await user.save({ validateBeforeSave: false });
+        // 10. Generate Token
+        const token = jwt.sign({
+            id: user._id,
+            type: userType,
+            role: role,
+            hospitalId: hospitalId
+        }, process.env.JWT_SECRET, {
+            expiresIn: process.env.JWT_EXPIRE || '7d',
+        });
 
-        // 8. Generate token
-        // Note: Admin and Hospital models both need generateAuthToken method
-        // If not using method on model, use standalone jwt.sign here
-        // Assuming models have methods like User.js/Hospital.js
-        const token = user.generateAuthToken ? user.generateAuthToken() : generateToken(user._id, userType);
-
+        // 11. Return Response
         res.status(200).json({
             success: true,
             message: 'Login successful',
             token,
             user: {
                 id: user._id,
-                name: user.name,
+                name: user.name || user.firstName + ' ' + user.lastName,
                 email: user.email,
-                role: user.role || 'hospital',
+                role: role,
                 userType: userType,
-                // Add verification status if applicable
-                isEmailVerified: true,
+                hospitalId: hospitalId,
+                // Include specific details if needed
+                specialization: user.specialization || undefined,
+                department: user.departmentId || undefined
             },
         });
+
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({
@@ -157,13 +218,8 @@ exports.login = async (req, res) => {
     }
 };
 
-// Helper for token generation if model method missing
+// Helper for token generation
 const jwt = require('jsonwebtoken');
-const generateToken = (id, type) => {
-    return jwt.sign({ id, type }, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_EXPIRE || '30d',
-    });
-};
 
 // @desc    Get current logged in user
 // @route   GET /api/auth/me
