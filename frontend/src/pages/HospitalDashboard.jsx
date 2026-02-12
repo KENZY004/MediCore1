@@ -11,6 +11,10 @@ import {
 import './Dashboard.css';
 
 import StaffManagement from '../components/StaffManagement';
+import DoctorAppointments from '../components/DoctorAppointments';
+import PatientRegistration from '../components/PatientRegistration';
+import BookAppointment from '../components/BookAppointment';
+import PatientList from '../components/PatientList';
 
 function HospitalDashboard() {
     const { user, logout } = useAuth();
@@ -104,24 +108,27 @@ function HospitalDashboard() {
                     {/* Doctor Links */}
                     {hasRole(['doctor']) && (
                         <>
-                            <a href="#" className="nav-item">
+                            <button onClick={() => setActiveTab('appointments')} className={`nav-item ${activeTab === 'appointments' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
                                 <FaCalendarCheck className="nav-icon" /> My Appointments
-                            </a>
-                            <a href="#" className="nav-item">
+                            </button>
+                            <button onClick={() => setActiveTab('patients')} className={`nav-item ${activeTab === 'patients' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
                                 <FaNotesMedical className="nav-icon" /> My Patients
-                            </a>
+                            </button>
                         </>
                     )}
 
                     {/* Receptionist Links */}
                     {hasRole(['receptionist']) && (
                         <>
-                            <a href="#" className="nav-item">
+                            <button onClick={() => setActiveTab('register-patient')} className={`nav-item ${activeTab === 'register-patient' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
                                 <FaUserPlus className="nav-icon" /> Register Patient
-                            </a>
-                            <a href="#" className="nav-item">
+                            </button>
+                            <button onClick={() => setActiveTab('book-appointment')} className={`nav-item ${activeTab === 'book-appointment' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
                                 <FaCalendarCheck className="nav-icon" /> Book Appointment
-                            </a>
+                            </button>
+                            <button onClick={() => setActiveTab('patient-list')} className={`nav-item ${activeTab === 'patient-list' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
+                                <FaUsers className="nav-icon" /> All Patients
+                            </button>
                         </>
                     )}
 
@@ -216,14 +223,14 @@ function HospitalDashboard() {
                                     {/* Receptionist Actions */}
                                     {hasRole(['receptionist']) && (
                                         <>
-                                            <ActionBtn icon={<FaUserPlus />} label="New Patient" />
-                                            <ActionBtn icon={<FaCalendarCheck />} label="Schedule" />
+                                            <ActionBtn icon={<FaUserPlus />} label="New Patient" onClick={() => setActiveTab('register-patient')} />
+                                            <ActionBtn icon={<FaCalendarCheck />} label="Schedule" onClick={() => setActiveTab('book-appointment')} />
                                         </>
                                     )}
 
                                     {/* Doctor Actions */}
                                     {hasRole(['doctor']) && (
-                                        <ActionBtn icon={<FaCalendarCheck />} label="Schedule" />
+                                        <ActionBtn icon={<FaCalendarCheck />} label="View Schedule" onClick={() => setActiveTab('appointments')} />
                                     )}
 
                                     {/* Billing Actions */}
@@ -240,8 +247,17 @@ function HospitalDashboard() {
                     )}
 
                     {activeTab === 'staff' && <StaffManagement />}
+                    {activeTab === 'appointments' && <DoctorAppointments />}
+                    {activeTab === 'patients' && <div><h2>My Patients - Coming Soon</h2></div>}
 
                     {activeTab === 'profile' && <div><h2>Hospital Profile - Coming Soon</h2></div>}
+
+                    {activeTab === 'register-patient' && <PatientRegistration onSuccess={(data) => {
+                        // Optional: Auto-switch to book appointment with this patient
+                        // For now, just stay on page or show success
+                    }} />}
+                    {activeTab === 'book-appointment' && <BookAppointment />}
+                    {activeTab === 'patient-list' && <PatientList />}
 
                 </div>
             </main>
