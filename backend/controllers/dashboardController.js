@@ -73,7 +73,7 @@ exports.getDoctorStats = async (req, res) => {
         const [todayAppointments, pendingReports] = await Promise.all([
             Appointment.countDocuments({
                 doctorId: req.user.id,
-                date: { $gte: startOfDay, $lte: endOfDay },
+                appointmentDate: { $gte: startOfDay, $lte: endOfDay },
                 status: { $ne: 'Cancelled' }
             }),
             // Placeholder: "Pending Reports" could be appointments with status 'Completed' but no report generated
@@ -108,14 +108,17 @@ exports.getReceptionStats = async (req, res) => {
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
 
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999);
+
         const [newPatients, todayAppointments] = await Promise.all([
             Patient.countDocuments({
                 hospitalId,
-                createdAt: { $gte: startOfDay }
+                createdAt: { $gte: startOfDay, $lte: endOfDay }
             }),
             Appointment.countDocuments({
                 hospitalId,
-                date: { $gte: startOfDay }, // Assuming 'date' field in Appointment allows simplified date match or range
+                appointmentDate: { $gte: startOfDay, $lte: endOfDay },
                 status: { $ne: 'Cancelled' }
             })
         ]);

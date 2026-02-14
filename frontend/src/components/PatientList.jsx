@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
-import { FaUsers, FaSearch, FaEllipsisV } from 'react-icons/fa';
+import { FaUsers, FaSearch, FaEllipsisV, FaEdit, FaTrash } from 'react-icons/fa';
+import EditPatientModal from './EditPatientModal';
 
 function PatientList({ readOnly = false }) {
     const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [editingPatient, setEditingPatient] = useState(null);
 
     useEffect(() => {
         fetchPatients();
@@ -22,6 +24,23 @@ function PatientList({ readOnly = false }) {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleDelete = async (id) => {
+        if (window.confirm('Are you sure you want to delete this patient? This will also remove their appointments.')) {
+            try {
+                const { data } = await api.delete(`/reception/patients/${id}`);
+                if (data.success) {
+                    setPatients(patients.filter(p => p._id !== id));
+                }
+            } catch (error) {
+                alert(error.response?.data?.message || 'Error deleting patient');
+            }
+        }
+    };
+
+    const handleUpdate = (updatedPatient) => {
+        setPatients(patients.map(p => p._id === updatedPatient._id ? updatedPatient : p));
     };
 
     const filteredPatients = patients.filter(patient =>
@@ -76,9 +95,24 @@ function PatientList({ readOnly = false }) {
                                         </td>
                                         {!readOnly && (
                                             <td style={{ padding: '1rem', textAlign: 'center' }}>
-                                                <button className="btn-sm" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#555' }}>
-                                                    <FaEllipsisV />
-                                                </button>
+                                                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                                                    <button
+                                                        onClick={() => setEditingPatient(patient)}
+                                                        className="btn-icon"
+                                                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1976d2' }}
+                                                        title="Edit"
+                                                    >
+                                                        <FaEdit />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(patient._id)}
+                                                        className="btn-icon"
+                                                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#d32f2f' }}
+                                                        title="Delete"
+                                                    >
+                                                        <FaTrash />
+                                                    </button>
+                                                </div>
                                             </td>
                                         )}
                                     </tr>
@@ -87,6 +121,14 @@ function PatientList({ readOnly = false }) {
                         </tbody>
                     </table>
                 </div>
+            )}
+
+            {editingPatient && (
+                <EditPatientModal
+                    patient={editingPatient}
+                    onClose={() => setEditingPatient(null)}
+                    onUpdate={handleUpdate}
+                />
             )}
         </div>
     );

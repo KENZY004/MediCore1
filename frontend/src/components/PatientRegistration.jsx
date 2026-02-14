@@ -55,9 +55,9 @@ function PatientRegistration({ onSuccess }) {
                 <h3><FaUserPlus /> Register New Patient</h3>
             </div>
 
-            <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleChange} required style={{ padding: '0.8rem' }} />
-                <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleChange} required style={{ padding: '0.8rem' }} />
+            <form onSubmit={handleSubmit} autoComplete="off" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleChange} required autoComplete="off" style={{ padding: '0.8rem' }} />
+                <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleChange} required autoComplete="off" style={{ padding: '0.8rem' }} />
 
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <label style={{ fontSize: '0.8rem', color: '#666' }}>Date of Birth</label>
@@ -95,9 +95,11 @@ function PatientRegistration({ onSuccess }) {
                     </div>
                 </div>
 
-                <button type="submit" className="btn-primary" style={{ gridColumn: '1 / -1', marginTop: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}>
-                    <FaSave /> Register Patient
-                </button>
+                <div style={{ gridColumn: '1 / -1', marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
+                    <button type="submit" className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '12px 24px', fontSize: '1rem', borderRadius: '6px', border: 'none', cursor: 'pointer', transition: 'all 0.3s ease' }}>
+                        <FaSave /> Register Patient
+                    </button>
+                </div>
             </form>
         </div>
     );

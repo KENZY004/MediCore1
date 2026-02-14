@@ -6,7 +6,10 @@ const {
     bookAppointment,
     searchPatients,
     getDoctors,
-    getAllPatients
+    getAllPatients,
+    getReceptionAppointments,
+    updatePatient,
+    deletePatient
 } = require('../controllers/receptionController');
 const { getReceptionStats } = require('../controllers/dashboardController');
 
@@ -19,5 +22,8 @@ router.get('/doctors', protect, allow('Receptionist', 'receptionist', 'hospital_
 // Receptionist Only (Write access)
 router.post('/patients', protect, allow('Receptionist', 'receptionist'), registerPatient);
 router.post('/appointments', protect, allow('Receptionist', 'receptionist'), bookAppointment);
+router.get('/appointments', protect, allow('Receptionist', 'receptionist'), getReceptionAppointments);
+router.put('/patients/:id', protect, allow('Receptionist', 'receptionist'), updatePatient);
+router.delete('/patients/:id', protect, allow('Receptionist', 'receptionist'), deletePatient);
 
 module.exports = router;

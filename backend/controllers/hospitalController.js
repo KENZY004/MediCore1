@@ -473,3 +473,29 @@ exports.deleteStaff = async (req, res) => {
         });
     }
 };
+
+// @desc    Get all appointments for hospital
+// @route   GET /api/hospitals/appointments
+// @access  Private (Hospital)
+exports.getAllAppointments = async (req, res) => {
+    try {
+        const hospitalId = req.user.id;
+
+        const appointments = await require('../models/Appointment').find({ hospitalId })
+            .populate('patientId', 'firstName lastName phone')
+            .populate('doctorId', 'firstName lastName departmentId')
+            .sort({ appointmentDate: -1, appointmentTime: 1 });
+
+        res.status(200).json({
+            success: true,
+            count: appointments.length,
+            data: appointments
+        });
+    } catch (error) {
+        console.error('Get all appointments error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching appointments'
+        });
+    }
+};

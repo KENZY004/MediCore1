@@ -195,7 +195,7 @@ exports.getAllPatients = async (req, res) => {
     try {
         const hospitalId = req.user.hospitalId;
         const patients = await Patient.find({ hospitalId })
-            .select('firstName lastName age gender phone email patientId lastVisit')
+            .select('firstName lastName age gender phone email patientId lastVisit createdAt registrationDate')
             .sort({ createdAt: -1 });
 
         res.status(200).json({
@@ -208,6 +208,129 @@ exports.getAllPatients = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error fetching patients'
+        });
+    }
+};
+
+// @desc    Get appointments (filtered by date)
+// @route   GET /api/reception/appointments
+// @access  Private (Receptionist)
+exports.getReceptionAppointments = async (req, res) => {
+    try {
+        const hospitalId = req.user.hospitalId;
+        const { date } = req.query;
+
+        let query = { hospitalId };
+
+        if (date === 'today') {
+            const startOfDay = new Date();
+            startOfDay.setHours(0, 0, 0, 0);
+            const endOfDay = new Date();
+            endOfDay.setHours(23, 59, 59, 999);
+
+            query.appointmentDate = { $gte: startOfDay, $lte: endOfDay };
+        }
+
+        const appointments = await Appointment.find(query)
+            .populate('patientId', 'firstName lastName phone')
+            .populate('doctorId', 'firstName lastName')
+            .sort({ appointmentDate: 1, appointmentTime: 1 });
+
+        res.status(200).json({
+            success: true,
+            count: appointments.length,
+            data: appointments
+        });
+    } catch (error) {
+        console.error('Get reception appointments error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching appointments'
+        });
+    }
+};
+
+// @desc    Update patient details
+// @route   PUT /api/reception/patients/:id
+// @access  Private (Receptionist)
+exports.updatePatient = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updates = req.body;
+        const hospitalId = req.user.hospitalId;
+
+        const patient = await Patient.findOne({ _id: id, hospitalId });
+
+        if (!patient) {
+            return res.status(404).json({
+                success: false,
+                message: 'Patient not found'
+            });
+        }
+
+        // Prevent updating immutable fields
+        delete updates._id;
+        delete updates.patientId;
+        delete updates.hospitalId;
+        delete updates.registeredBy;
+        delete updates.createdAt;
+
+        // Update fields
+        Object.keys(updates).forEach(key => {
+            patient[key] = updates[key];
+        });
+
+        await patient.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Patient updated successfully',
+            data: patient
+        });
+
+    } catch (error) {
+        console.error('Update patient error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error updating patient'
+        });
+    }
+};
+
+// @desc    Delete patient
+// @route   DELETE /api/reception/patients/:id
+// @access  Private (Receptionist)
+exports.deletePatient = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const hospitalId = req.user.hospitalId;
+
+        const patient = await Patient.findOne({ _id: id, hospitalId });
+
+        if (!patient) {
+            return res.status(404).json({
+                success: false,
+                message: 'Patient not found'
+            });
+        }
+
+        // Optional: Check if patient has appointments?
+        // For now, we allow deletion but maybe we should warn or cascade delete appointments?
+        // Let's keep it simple: Delete patient and their appointments
+
+        await Appointment.deleteMany({ patientId: id, hospitalId });
+        await patient.deleteOne();
+
+        res.status(200).json({
+            success: true,
+            message: 'Patient deleted successfully'
+        });
+
+    } catch (error) {
+        console.error('Delete patient error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error deleting patient'
         });
     }
 };

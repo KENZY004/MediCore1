@@ -16,6 +16,11 @@ import PatientRegistration from '../components/PatientRegistration';
 import BookAppointment from '../components/BookAppointment';
 import PatientList from '../components/PatientList';
 import HospitalProfile from '../components/HospitalProfile';
+import BillingManagement from '../components/BillingManagement';
+import TodaysAppointments from '../components/TodaysAppointments';
+import NewRegistrations from '../components/NewRegistrations';
+import HospitalAppointments from '../components/HospitalAppointments';
+import DoctorPatients from '../components/DoctorPatients';
 
 function HospitalDashboard() {
     const { user, logout } = useAuth();
@@ -135,9 +140,9 @@ function HospitalDashboard() {
 
                     {/* Billing Links */}
                     {hasRole(['billing', 'hospital_admin']) && (
-                        <a href="#" className="nav-item">
+                        <button onClick={() => setActiveTab('billing')} className={`nav-item ${activeTab === 'billing' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
                             <FaFileInvoiceDollar className="nav-icon" /> Billing & Invoices
-                        </a>
+                        </button>
                     )}
 
                 </nav>
@@ -208,8 +213,20 @@ function HospitalDashboard() {
                             {/* Receptionist View */}
                             {hasRole(['receptionist']) && (
                                 <div className="stats-grid">
-                                    <StatCard title="New Registrations" value={stats.newPatients || 0} icon={<FaUserPlus />} bgClass="bg-green" />
-                                    <StatCard title="Today's Appointments" value={stats.todayAppointments || 0} icon={<FaCalendarCheck />} bgClass="bg-blue" />
+                                    <StatCard
+                                        title="New Registrations"
+                                        value={stats.newPatients || 0}
+                                        icon={<FaUserPlus />}
+                                        bgClass="bg-green"
+                                        onClick={() => setActiveTab('stats-new-registrations')}
+                                    />
+                                    <StatCard
+                                        title="Today's Appointments"
+                                        value={stats.todayAppointments || 0}
+                                        icon={<FaCalendarCheck />}
+                                        bgClass="bg-blue"
+                                        onClick={() => setActiveTab('stats-today-appointments')}
+                                    />
                                 </div>
                             )}
 
@@ -244,7 +261,7 @@ function HospitalDashboard() {
 
                                     {/* Billing Actions */}
                                     {hasRole(['billing', 'hospital_admin']) && (
-                                        <ActionBtn icon={<FaFileInvoiceDollar />} label="New Invoice" />
+                                        <ActionBtn icon={<FaFileInvoiceDollar />} label="New Invoice" onClick={() => setActiveTab('billing')} />
                                     )}
 
                                     {!hasRole(['receptionist', 'billing', 'doctor', 'hospital_admin']) && (
@@ -256,8 +273,12 @@ function HospitalDashboard() {
                     )}
 
                     {activeTab === 'staff' && <StaffManagement />}
-                    {activeTab === 'appointments' && <DoctorAppointments />}
-                    {activeTab === 'patients' && <div><h2>My Patients - Coming Soon</h2></div>}
+                    {activeTab === 'appointments' && (
+                        hasRole(['hospital_admin']) ? <HospitalAppointments /> : <DoctorAppointments />
+                    )}
+                    {activeTab === 'patients' && (
+                        hasRole(['hospital_admin']) ? <PatientList readOnly={true} /> : <DoctorPatients />
+                    )}
 
                     {activeTab === 'profile' && <HospitalProfile />}
 
@@ -267,6 +288,10 @@ function HospitalDashboard() {
                     }} />}
                     {activeTab === 'book-appointment' && <BookAppointment />}
                     {activeTab === 'patient-list' && <PatientList readOnly={hasRole(['hospital_admin'])} />}
+                    {activeTab === 'billing' && <BillingManagement />}
+
+                    {activeTab === 'stats-today-appointments' && <TodaysAppointments onBack={() => setActiveTab('dashboard')} />}
+                    {activeTab === 'stats-new-registrations' && <NewRegistrations onBack={() => setActiveTab('dashboard')} />}
 
                 </div>
             </main>
@@ -274,9 +299,9 @@ function HospitalDashboard() {
     );
 }
 
-function StatCard({ title, value, icon, bgClass }) {
+function StatCard({ title, value, icon, bgClass, onClick }) {
     return (
-        <div className="stat-card">
+        <div className="stat-card" onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}>
             <div className="stat-info">
                 <h3>{title}</h3>
                 <div className="stat-value">{value}</div>
