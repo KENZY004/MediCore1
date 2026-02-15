@@ -17,7 +17,8 @@ const {
     createInvoice,
     getInvoices,
     updateInvoice,
-    deleteInvoice
+    deleteInvoice,
+    getBillableAppointments
 } = require('../controllers/billingController');
 
 const {
@@ -44,5 +45,6 @@ router.post('/invoices', protect, hospitalOnly, createInvoice);
 router.get('/invoices', protect, hospitalOnly, getInvoices);
 router.put('/invoices/:id', protect, hospitalOnly, updateInvoice);
 router.delete('/invoices/:id', protect, hospitalOnly, deleteInvoice);
+router.get('/billable-appointments', protect, hospitalOnly, getBillableAppointments);
 
 module.exports = router;

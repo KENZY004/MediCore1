@@ -7,6 +7,7 @@ function StaffManagement() {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingId, setEditingId] = useState(null); // Track if editing
+    const [specializations, setSpecializations] = useState([]); // Store hospital specializations
 
     const initialFormState = {
         role: 'Doctor',
@@ -27,7 +28,19 @@ function StaffManagement() {
 
     useEffect(() => {
         fetchStaff();
+        fetchHospitalProfile();
     }, []);
+
+    const fetchHospitalProfile = async () => {
+        try {
+            const { data } = await api.get('/hospital/profile');
+            if (data.success && data.data.hospital.specializations) {
+                setSpecializations(data.data.hospital.specializations);
+            }
+        } catch (error) {
+            console.error("Failed to fetch hospital profile", error);
+        }
+    };
 
     const fetchStaff = async () => {
         try {
@@ -43,7 +56,9 @@ function StaffManagement() {
     };
 
     const handleInputChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        if (name === 'experience' && value < 0) return;
+        setFormData({ ...formData, [name]: value });
     };
 
     const handleEdit = (staff) => {
@@ -59,7 +74,8 @@ function StaffManagement() {
             qualification: staff.qualification || '',
             experience: staff.experience || '',
             licenseNumber: staff.licenseNumber || '',
-            employeeId: staff.employeeId || ''
+            employeeId: staff.employeeId || '',
+            departmentId: staff.departmentId || ''
         });
         setShowModal(true);
     };
@@ -85,14 +101,28 @@ function StaffManagement() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Clean payload
+        const payload = { ...formData };
+
+        // Remove departmentId if empty string to avoid ObjectId cast error
+        if (payload.departmentId === '') {
+            delete payload.departmentId;
+        }
+
+        // Ensure experience is a number if present
+        if (payload.experience) {
+            payload.experience = Number(payload.experience);
+        }
+
         try {
             let response;
             if (editingId) {
                 // Update
-                response = await api.put(`/hospital/staff/${editingId}`, formData);
+                response = await api.put(`/hospital/staff/${editingId}`, payload);
             } else {
                 // Create
-                response = await api.post('/hospital/staff', formData);
+                response = await api.post('/hospital/staff', payload);
             }
 
             if (response.data.success) {
@@ -183,7 +213,7 @@ function StaffManagement() {
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td style={{ padding: '1rem', color: '#555' }}>{staff.specialization || 'General'}</td>
+                                            <td style={{ padding: '1rem' }}>{staff.specialization || 'General'}</td>
                                             <td style={{ padding: '1rem' }}>
                                                 <div style={{ display: 'flex', gap: '8px' }}>
                                                     <button style={btnActionStyle('#f39c12')} title="Edit" onClick={() => handleEdit(staff)}><FaEdit /></button>
@@ -299,9 +329,24 @@ function StaffManagement() {
 
                             {formData.role === 'Doctor' && (
                                 <>
-                                    <input type="text" name="specialization" placeholder="Specialization (e.g. Cardiology)" value={formData.specialization} onChange={handleInputChange} style={{ padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px' }} />
+                                    <select
+                                        name="specialization"
+                                        value={formData.specialization}
+                                        onChange={handleInputChange}
+                                        style={{ padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px', width: '100%' }}
+                                        required
+                                    >
+                                        <option value="">Select Specialization</option>
+                                        {specializations.length > 0 ? (
+                                            specializations.map(spec => (
+                                                <option key={spec} value={spec}>{spec}</option>
+                                            ))
+                                        ) : (
+                                            <option value="" disabled>No specializations available for this hospital</option>
+                                        )}
+                                    </select>
                                     <input type="text" name="qualification" placeholder="Qualification (e.g. MBBS)" value={formData.qualification} onChange={handleInputChange} style={{ padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px' }} />
-                                    <input type="number" name="experience" placeholder="Years of Experience" value={formData.experience} onChange={handleInputChange} style={{ padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px' }} />
+                                    <input type="number" name="experience" min="0" placeholder="Years of Experience" value={formData.experience} onChange={handleInputChange} style={{ padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px' }} />
                                     <input type="text" name="licenseNumber" placeholder="License Number" value={formData.licenseNumber} onChange={handleInputChange} style={{ padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px' }} />
                                 </>
                             )}

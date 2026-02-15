@@ -123,7 +123,7 @@ function Register() {
                 }
             };
 
-            const response = await api.post('/hospitals/register', registerData);
+            const response = await api.post('/hospital/register', registerData);
 
             if (response.data.success) {
                 setSuccess('Hospital registration submitted successfully! Awaiting admin approval.');

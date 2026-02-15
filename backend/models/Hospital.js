@@ -119,7 +119,7 @@ const hospitalSchema = new mongoose.Schema({
     },
 
     approvedBy: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.Mixed, // Changed to Mixed to allow string IDs (super_admin_hardcoded)
         ref: 'Admin'
     },
 

@@ -108,6 +108,16 @@ const PrescriptionModal = ({ appointment, onClose, onSuccess }) => {
                         </div>
 
                         <div className="medicines-list">
+                            <div className="medicines-header" style={{
+                                display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 2fr auto', gap: '0.5rem', marginBottom: '0.5rem', fontWeight: 'bold', fontSize: '0.9rem', color: '#555'
+                            }}>
+                                <div>Medicine Name</div>
+                                <div>Dosage</div>
+                                <div>Freq</div>
+                                <div>Duration</div>
+                                <div>Instructions</div>
+                                <div></div> {/* Empty for delete button */}
+                            </div>
                             {medicines.map((med, index) => (
                                 <div key={index} className="medicine-row" style={{
                                     display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 2fr auto', gap: '0.5rem', marginBottom: '0.5rem', alignItems: 'center'
@@ -117,35 +127,35 @@ const PrescriptionModal = ({ appointment, onClose, onSuccess }) => {
                                         placeholder="Medicine Name"
                                         value={med.medicine}
                                         onChange={(e) => handleMedicineChange(index, 'medicine', e.target.value)}
-                                        style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
+                                        style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd', width: '100%', minWidth: 0 }}
                                     />
                                     <input
                                         type="text"
                                         placeholder="Dosage"
                                         value={med.dosage}
                                         onChange={(e) => handleMedicineChange(index, 'dosage', e.target.value)}
-                                        style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
+                                        style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd', width: '100%', minWidth: 0 }}
                                     />
                                     <input
                                         type="text"
                                         placeholder="Freq"
                                         value={med.frequency}
                                         onChange={(e) => handleMedicineChange(index, 'frequency', e.target.value)}
-                                        style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
+                                        style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd', width: '100%', minWidth: 0 }}
                                     />
                                     <input
                                         type="text"
                                         placeholder="Duration"
                                         value={med.duration}
                                         onChange={(e) => handleMedicineChange(index, 'duration', e.target.value)}
-                                        style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
+                                        style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd', width: '100%', minWidth: 0 }}
                                     />
                                     <input
                                         type="text"
                                         placeholder="Instructions"
                                         value={med.instructions}
                                         onChange={(e) => handleMedicineChange(index, 'instructions', e.target.value)}
-                                        style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
+                                        style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd', width: '100%', minWidth: 0 }}
                                     />
                                     <button type="button" onClick={() => removeMedicineRow(index)} style={{
                                         color: '#e74c3c', background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem'

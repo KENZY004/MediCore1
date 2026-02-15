@@ -118,6 +118,11 @@ const appointmentSchema = new mongoose.Schema({
         default: false
     },
 
+    invoiceId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Invoice'
+    },
+
     // Cancellation
     cancellationReason: {
         type: String

@@ -162,6 +162,7 @@ function DoctorAppointments() {
 
                                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                                         <button className="btn-sm" onClick={() => {
+                                            console.log("Selected Appointment for Details:", apt); // Debugging log
                                             setSelectedAppointment(apt);
                                             setShowDetailsModal(true);
                                         }} style={{

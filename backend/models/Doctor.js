@@ -57,13 +57,7 @@ const doctorSchema = new mongoose.Schema({
     // Professional Information
     specialization: {
         type: String,
-        required: [true, 'Specialization is required'],
-        enum: [
-            'Cardiology', 'Neurology', 'Orthopedics', 'Pediatrics',
-            'Gynecology', 'Dermatology', 'ENT', 'Ophthalmology',
-            'General Medicine', 'Surgery', 'Emergency', 'Anesthesiology',
-            'Radiology', 'Pathology', 'Psychiatry', 'Dentistry'
-        ]
+        required: [true, 'Specialization is required']
     },
 
     qualification: {

@@ -9,8 +9,9 @@ exports.getDoctorAppointments = async (req, res) => {
         const doctorId = req.user.id;
 
         // Find appointments for this doctor, populated with patient details
+        // Added bloodGroup to populated fields
         const appointments = await Appointment.find({ doctorId })
-            .populate('patientId', 'firstName lastName age gender phone')
+            .populate('patientId', 'firstName lastName age gender phone bloodGroup')
             .sort({ appointmentDate: 1, appointmentTime: 1 }); // Sort by date and time
 
         res.status(200).json({
@@ -95,10 +96,6 @@ exports.addPrescription = async (req, res) => {
         if (diagnosis) appointment.diagnosis = diagnosis;
         if (notes) appointment.notes = notes;
 
-        // Auto-complete appointment if prescription is added? 
-        // Let's keep it manual or optional, but typically adding Rx means consultation is done.
-        // appointment.status = 'Completed'; 
-
         await appointment.save();
 
         res.status(200).json({
@@ -125,7 +122,11 @@ exports.getDoctorPatients = async (req, res) => {
 
         // Find all unique patient IDs from appointments
         const appointments = await Appointment.find({ doctorId, hospitalId }).select('patientId');
-        const uniquePatientIds = [...new Set(appointments.map(apt => apt.patientId.toString()))];
+
+        // Filter out null patientIds first
+        const validAppointments = appointments.filter(apt => apt.patientId);
+
+        const uniquePatientIds = [...new Set(validAppointments.map(apt => apt.patientId.toString()))];
 
         // Fetch patient details
         const patients = await require('../models/Patient').find({
@@ -155,7 +156,6 @@ exports.getPatientHistory = async (req, res) => {
         const hospitalId = req.user.hospitalId;
 
         // Fetch all appointments for this patient in this hospital
-        // Doctors can see full history within the hospital for better diagnosis
         const history = await Appointment.find({
             patientId: id,
             hospitalId
@@ -195,7 +195,6 @@ exports.updateAppointmentStatus = async (req, res) => {
             });
         }
 
-        // Validate status
         const validStatuses = ['Scheduled', 'Confirmed', 'Completed', 'Cancelled'];
         if (!validStatuses.includes(status)) {
             return res.status(400).json({
@@ -271,9 +270,15 @@ exports.getRecentPatients = async (req, res) => {
         const seenIds = new Set();
 
         for (const apt of appointments) {
+            // Check for valid patientId (it might be null if patient deleted)
             if (apt.patientId && !seenIds.has(apt.patientId._id.toString())) {
+
+                // Safely convert to object if needed, though lean() or just using it works if populated
+                // If it's a mongoose doc, .toObject() makes it a plain JS object
+                const patientData = apt.patientId.toObject ? apt.patientId.toObject() : apt.patientId;
+
                 uniquePatients.push({
-                    ...apt.patientId.toObject(),
+                    ...patientData,
                     lastAppointmentDate: apt.appointmentDate
                 });
                 seenIds.add(apt.patientId._id.toString());

@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
-import { FaFileInvoiceDollar, FaPlus, FaEye, FaTrash, FaTimes, FaPrint } from 'react-icons/fa';
+import { FaFileInvoiceDollar, FaPlus, FaTrash, FaTimes, FaCalendarCheck } from 'react-icons/fa';
 
 function BillingManagement() {
     const [invoices, setInvoices] = useState([]);
+    const [billableAppointments, setBillableAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
-    const [viewInvoice, setViewInvoice] = useState(null);
 
+    // Form State
     const initialFormState = {
         patientName: '',
+        patientId: '',
+        appointmentId: '',
         status: 'Pending',
         items: [{ description: '', cost: '' }],
         date: new Date().toISOString().split('T')[0]
@@ -18,8 +21,17 @@ function BillingManagement() {
     const [formData, setFormData] = useState(initialFormState);
 
     useEffect(() => {
-        fetchInvoices();
+        fetchData();
     }, []);
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            await Promise.all([fetchInvoices(), fetchBillableAppointments()]);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const fetchInvoices = async () => {
         try {
@@ -29,8 +41,17 @@ function BillingManagement() {
             }
         } catch (error) {
             console.error("Failed to fetch invoices", error);
-        } finally {
-            setLoading(false);
+        }
+    };
+
+    const fetchBillableAppointments = async () => {
+        try {
+            const { data } = await api.get('/hospital/billable-appointments');
+            if (data.success) {
+                setBillableAppointments(data.data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch billable appointments", error);
         }
     };
 
@@ -54,20 +75,38 @@ function BillingManagement() {
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this invoice?')) return;
+        if (!window.confirm('Are you sure you want to delete this invoice? The linked appointment will be marked as unbilled.')) return;
         try {
             const { data } = await api.delete(`/hospital/invoices/${id}`);
             if (data.success) {
                 alert('Invoice deleted.');
-                fetchInvoices();
+                fetchData(); // Refresh both lists
             }
         } catch (error) {
             alert(error.response?.data?.message || 'Error deleting invoice');
         }
     };
 
-    const openAddModal = () => {
-        setFormData(initialFormState);
+    const openAddModal = (appointment = null) => {
+        if (appointment) {
+            // Pre-fill from appointment
+            setFormData({
+                patientName: `${appointment.patientId?.firstName} ${appointment.patientId?.lastName}`,
+                patientId: appointment.patientId?._id,
+                appointmentId: appointment._id,
+                status: 'Pending',
+                items: [
+                    { description: 'Consultation Fee', cost: appointment.consultationFee || '' },
+                    ...(appointment.prescription ? appointment.prescription.map(p => ({
+                        description: `Rx: ${p.medicine} (${p.dosage})`,
+                        cost: '' // Doctor doesn't usually set price, admin fills it
+                    })) : [])
+                ],
+                date: new Date().toISOString().split('T')[0]
+            });
+        } else {
+            setFormData(initialFormState);
+        }
         setShowModal(true);
     };
 
@@ -79,7 +118,7 @@ function BillingManagement() {
             if (response.data.success) {
                 alert('Invoice created successfully');
                 setShowModal(false);
-                fetchInvoices();
+                fetchData(); // Refresh both lists
                 setFormData(initialFormState);
             }
         } catch (error) {
@@ -87,7 +126,7 @@ function BillingManagement() {
         }
     };
 
-    // Styling Constants (Matching StaffManagement)
+    // Styling Constants
     const btnPrimaryStyle = {
         background: 'var(--primary-blue)',
         color: 'white',
@@ -136,12 +175,63 @@ function BillingManagement() {
         <div className="billing-management">
             <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <h2>Billing & Invoices</h2>
-                <button style={btnPrimaryStyle} onClick={openAddModal}>
+                <button style={btnPrimaryStyle} onClick={() => openAddModal()}>
                     <FaPlus /> New Invoice
                 </button>
             </div>
 
-            {loading ? <p>Loading invoices...</p> : (
+            {/* Billable Appointments Section */}
+            {billableAppointments.length > 0 && (
+                <div style={{ marginBottom: '2rem' }}>
+                    <h3 style={{ fontSize: '1.1rem', color: '#374151', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <FaCalendarCheck style={{ color: '#f59e0b' }} /> Pending Billing (Completed Appointments)
+                    </h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
+                        {billableAppointments.map(appt => (
+                            <div key={appt._id} style={{
+                                background: '#fff',
+                                border: '1px solid #e5e7eb',
+                                borderRadius: '8px',
+                                padding: '1rem',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                            }}>
+                                <div>
+                                    <div style={{ fontWeight: '600', color: '#111827' }}>
+                                        {appt.patientId?.firstName} {appt.patientId?.lastName}
+                                    </div>
+                                    <div style={{ fontSize: '0.85rem', color: '#6b7280', marginTop: '0.25rem' }}>
+                                        Dr. {appt.doctorId?.firstName} {appt.doctorId?.lastName}
+                                    </div>
+                                    <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>
+                                        {new Date(appt.appointmentDate).toLocaleDateString()}
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => openAddModal(appt)}
+                                    style={{
+                                        background: '#eff6ff',
+                                        color: '#2563eb',
+                                        border: '1px solid #bfdbfe',
+                                        padding: '0.5rem 1rem',
+                                        borderRadius: '6px',
+                                        fontSize: '0.85rem',
+                                        fontWeight: '500',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    Create Invoice
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Invoices List */}
+            {loading ? <p>Loading data...</p> : (
                 <div className="table-container" style={{ background: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
                     <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
@@ -166,7 +256,6 @@ function BillingManagement() {
                                     </td>
                                     <td style={{ padding: '1rem' }}>
                                         <div style={{ display: 'flex', gap: '8px' }}>
-                                            {/* <button style={btnActionStyle('#3498db')} title="View"><FaEye /></button> */}
                                             <button style={btnActionStyle('#e74c3c')} title="Delete" onClick={() => handleDelete(invoice._id)}><FaTrash /></button>
                                         </div>
                                     </td>
@@ -192,7 +281,9 @@ function BillingManagement() {
                         boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
                     }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                            <h3 style={{ margin: 0, color: '#333' }}>Create New Invoice</h3>
+                            <h3 style={{ margin: 0, color: '#333' }}>
+                                {formData.appointmentId ? 'Generate Invoice from Appointment' : 'Create New Invoice'}
+                            </h3>
                             <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#999' }}>
                                 <FaTimes />
                             </button>
@@ -247,7 +338,7 @@ function BillingManagement() {
 
                             <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                                 <button type="submit" style={{ ...btnPrimaryStyle, flex: 1, justifyContent: 'center' }}>
-                                    Generate Invoice
+                                    {formData.appointmentId ? 'Create & Link Invoice' : 'Generate Invoice'}
                                 </button>
                                 <button type="button" onClick={() => setShowModal(false)} style={{ flex: 1, padding: '0.6rem', background: '#f8f9fa', border: '1px solid #ddd', borderRadius: '6px', cursor: 'pointer', color: '#666', fontWeight: '500' }}>Cancel</button>
                             </div>

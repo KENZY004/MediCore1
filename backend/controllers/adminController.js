@@ -14,7 +14,7 @@ const generateToken = (id) => {
 // @access  Private (Admin)
 exports.getAdminProfile = async (req, res) => {
     try {
-        const admin = await Admin.findById(req.admin.id);
+        const admin = await Admin.findById(req.user.id);
 
         if (!admin) {
             return res.status(404).json({
@@ -221,7 +221,7 @@ exports.approveHospital = async (req, res) => {
         }
 
         hospital.status = 'approved';
-        hospital.approvedBy = req.admin.id;
+        hospital.approvedBy = req.user.id;
         hospital.approvedAt = new Date();
         hospital.isActive = true;
 
