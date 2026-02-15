@@ -1,10 +1,11 @@
 const Invoice = require('../models/Invoice');
 const User = require('../models/User');
+const Appointment = require('../models/Appointment');
 
 // Create new invoice
 exports.createInvoice = async (req, res) => {
     try {
-        const { patientName, patientId, items, status, date } = req.body;
+        const { patientName, patientId, items, status, date, appointmentId } = req.body;
         const hospitalId = req.user.id;
 
         const totalAmount = items.reduce((sum, item) => sum + Number(item.cost), 0);
@@ -20,6 +21,15 @@ exports.createInvoice = async (req, res) => {
         });
 
         await newInvoice.save();
+
+        // If appointmentId is provided, link it
+        if (appointmentId) {
+            await Appointment.findByIdAndUpdate(appointmentId, {
+                invoiceId: newInvoice._id,
+                // optionally mark as paid if invoice status is Paid
+                isPaid: status === 'Paid'
+            });
+        }
 
         res.status(201).json({
             success: true,
@@ -73,6 +83,14 @@ exports.updateInvoice = async (req, res) => {
             });
         }
 
+        // If status changed to Paid, update linked appointment
+        if (updates.status === 'Paid') {
+            await Appointment.findOneAndUpdate(
+                { invoiceId: invoice._id },
+                { isPaid: true }
+            );
+        }
+
         res.status(200).json({
             success: true,
             message: 'Invoice updated',
@@ -100,12 +118,45 @@ exports.deleteInvoice = async (req, res) => {
             });
         }
 
+        // Unlink from appointment
+        await Appointment.findOneAndUpdate(
+            { invoiceId: id },
+            { $unset: { invoiceId: 1 }, isPaid: false }
+        );
+
         res.status(200).json({
             success: true,
             message: 'Invoice deleted'
         });
     } catch (error) {
         console.error("Error deleting invoice:", error);
+        res.status(500).json({
+            success: false,
+            message: 'Server Error'
+        });
+    }
+};
+
+// Get billable appointments (Completed but no invoice)
+exports.getBillableAppointments = async (req, res) => {
+    try {
+        const hospitalId = req.user.id;
+
+        const appointments = await Appointment.find({
+            hospitalId,
+            status: 'Completed',
+            invoiceId: { $exists: false }
+        })
+            .populate('patientId', 'firstName lastName')
+            .populate('doctorId', 'firstName lastName departmentId') // department might be useful
+            .sort({ appointmentDate: -1 });
+
+        res.status(200).json({
+            success: true,
+            data: appointments
+        });
+    } catch (error) {
+        console.error("Error fetching billable appointments:", error);
         res.status(500).json({
             success: false,
             message: 'Server Error'
