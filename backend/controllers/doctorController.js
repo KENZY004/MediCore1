@@ -33,27 +33,27 @@ exports.getDoctorAppointments = async (req, res) => {
 exports.getDoctorStats = async (req, res) => {
     try {
         const doctorId = req.user.id;
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        // Create date range for today
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
 
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999);
 
         // Count today's appointments
         const todayAppointments = await Appointment.countDocuments({
             doctorId,
             appointmentDate: {
-                $gte: today,
-                $lt: tomorrow
+                $gte: startOfDay,
+                $lte: endOfDay
             },
             status: { $ne: 'Cancelled' }
         });
 
-        // Count pending reports (placeholder logic, usually based on status 'Completed' but no report uploaded)
-        // For now, let's say 'Scheduled' appointments are "pending" attention
+        // Count pending reports (Scheduled or Confirmed but not Completed)
         const pendingReports = await Appointment.countDocuments({
             doctorId,
-            status: 'Scheduled'
+            status: { $in: ['Scheduled', 'Confirmed'] }
         });
 
         res.status(200).json({
@@ -173,6 +173,123 @@ exports.getPatientHistory = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error fetching patient history'
+        });
+    }
+};
+
+// @desc    Update appointment status
+// @route   PUT /api/doctor/appointments/:id/status
+// @access  Private (Doctor)
+exports.updateAppointmentStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        const doctorId = req.user.id;
+
+        const appointment = await Appointment.findOne({ _id: id, doctorId });
+
+        if (!appointment) {
+            return res.status(404).json({
+                success: false,
+                message: 'Appointment not found'
+            });
+        }
+
+        // Validate status
+        const validStatuses = ['Scheduled', 'Confirmed', 'Completed', 'Cancelled'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid status'
+            });
+        }
+
+        appointment.status = status;
+        await appointment.save();
+
+        res.status(200).json({
+            success: true,
+            message: `Appointment marked as ${status}`,
+            data: appointment
+        });
+    } catch (error) {
+        console.error('Update appointment status error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error updating appointment status'
+        });
+    }
+};
+
+// @desc    Get next scheduled appointment
+// @route   GET /api/doctor/next-appointment
+// @access  Private (Doctor)
+exports.getNextAppointment = async (req, res) => {
+    try {
+        const doctorId = req.user.id;
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const appointment = await Appointment.findOne({
+            doctorId,
+            appointmentDate: { $gte: startOfDay },
+            status: { $in: ['Scheduled', 'Confirmed'] }
+        })
+            .populate('patientId', 'firstName lastName age gender')
+            .sort({ appointmentDate: 1, appointmentTime: 1 });
+
+        res.status(200).json({
+            success: true,
+            data: appointment
+        });
+    } catch (error) {
+        console.error('Get next appointment error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching next appointment'
+        });
+    }
+};
+
+// @desc    Get recent patients
+// @route   GET /api/doctor/recent-patients
+// @access  Private (Doctor)
+exports.getRecentPatients = async (req, res) => {
+    try {
+        const doctorId = req.user.id;
+
+        // Get recent completed appointments
+        const appointments = await Appointment.find({
+            doctorId,
+            status: 'Completed'
+        })
+            .sort({ appointmentDate: -1, appointmentTime: -1 })
+            .populate('patientId', 'firstName lastName age gender lastVisit');
+
+        // Deduplicate patients
+        const uniquePatients = [];
+        const seenIds = new Set();
+
+        for (const apt of appointments) {
+            if (apt.patientId && !seenIds.has(apt.patientId._id.toString())) {
+                uniquePatients.push({
+                    ...apt.patientId.toObject(),
+                    lastAppointmentDate: apt.appointmentDate
+                });
+                seenIds.add(apt.patientId._id.toString());
+            }
+            if (uniquePatients.length >= 5) break;
+        }
+
+        res.status(200).json({
+            success: true,
+            data: uniquePatients
+        });
+    } catch (error) {
+        console.error('Get recent patients error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching recent patients'
         });
     }
 };

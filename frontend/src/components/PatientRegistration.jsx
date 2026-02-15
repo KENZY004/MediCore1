@@ -57,7 +57,7 @@ function PatientRegistration({ onSuccess }) {
 
             <form onSubmit={handleSubmit} autoComplete="off" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleChange} required autoComplete="off" style={{ padding: '0.8rem' }} />
-                <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleChange} required autoComplete="off" style={{ padding: '0.8rem' }} />
+                <input type="text" name="lastName" placeholder="Last Name (Optional)" value={formData.lastName} onChange={handleChange} autoComplete="off" style={{ padding: '0.8rem' }} />
 
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <label style={{ fontSize: '0.8rem', color: '#666' }}>Date of Birth</label>

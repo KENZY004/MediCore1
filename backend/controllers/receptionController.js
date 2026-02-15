@@ -11,7 +11,7 @@ exports.registerPatient = async (req, res) => {
         const hospitalId = req.user.hospitalId;
 
         // Basic validation
-        if (!firstName || !lastName || !dateOfBirth || !gender || !phone) {
+        if (!firstName || !dateOfBirth || !gender || !phone) {
             return res.status(400).json({
                 success: false,
                 message: 'Please provide all required fields'
@@ -30,6 +30,8 @@ exports.registerPatient = async (req, res) => {
         // Generate Patient ID ( Simple logic: HOSP-Timestamp-Random)
         const patientId = `PID-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
+        console.log(`REGISTER DEBUG: Registering patient for HospitalId: ${hospitalId}`);
+
         const patient = await Patient.create({
             patientId,
             firstName,
@@ -43,6 +45,7 @@ exports.registerPatient = async (req, res) => {
             hospitalId,
             registeredBy: req.user.id
         });
+        console.log(`REGISTER DEBUG: Patient created with ID: ${patient._id}`);
 
         res.status(201).json({
             success: true,
@@ -139,6 +142,7 @@ exports.searchPatients = async (req, res) => {
         }
 
         // Search by name or phone
+        console.log(`SEARCH DEBUG: HospitalId: ${hospitalId}, Query: ${query}`);
         const patients = await Patient.find({
             hospitalId,
             $or: [
@@ -147,6 +151,7 @@ exports.searchPatients = async (req, res) => {
                 { phone: { $regex: query, $options: 'i' } }
             ]
         }).limit(10);
+        console.log(`SEARCH DEBUG: Found ${patients.length} patients`);
 
         res.status(200).json({
             success: true,

@@ -38,16 +38,28 @@ function BookAppointment({ preSelectedPatient }) {
         }
     }, [preSelectedPatient]);
 
-    const handleSearch = async (e) => {
-        e.preventDefault();
-        try {
-            const { data } = await api.get(`/reception/patients/search?query=${searchQuery}`);
-            if (data.success) {
-                setSearchResults(data.data);
+    // Live search with debounce
+    useEffect(() => {
+        const delayDebounceFn = setTimeout(async () => {
+            if (searchQuery.length >= 1) { // Changed to >= 1 for faster search
+                try {
+                    const { data } = await api.get(`/reception/patients/search?query=${searchQuery}`);
+                    if (data.success) {
+                        setSearchResults(data.data);
+                    }
+                } catch (error) {
+                    console.error("Search failed", error);
+                }
+            } else {
+                setSearchResults([]);
             }
-        } catch (error) {
-            console.error("Search failed", error);
-        }
+        }, 300); // Reduced delay slightly for snappier feel
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchQuery]);
+
+    const handleSearch = (e) => {
+        e.preventDefault(); // Prevent default form submission if user hits enter
     };
 
     const selectPatient = (patient) => {

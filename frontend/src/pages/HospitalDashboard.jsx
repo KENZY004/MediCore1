@@ -21,6 +21,7 @@ import TodaysAppointments from '../components/TodaysAppointments';
 import NewRegistrations from '../components/NewRegistrations';
 import HospitalAppointments from '../components/HospitalAppointments';
 import DoctorPatients from '../components/DoctorPatients';
+import { NextAppointmentWidget, RecentPatientsWidget } from '../components/DoctorDashboardWidgets';
 
 function HospitalDashboard() {
     const { user, logout } = useAuth();
@@ -204,10 +205,33 @@ function HospitalDashboard() {
 
                             {/* Doctor View */}
                             {hasRole(['doctor']) && (
-                                <div className="stats-grid">
-                                    <StatCard title="Today's Appointments" value={stats.todayAppointments || 0} icon={<FaCalendarCheck />} bgClass="bg-blue" />
-                                    <StatCard title="Pending Reports" value={stats.pendingReports || 0} icon={<FaNotesMedical />} bgClass="bg-orange" />
-                                </div>
+                                <>
+                                    <div className="stats-grid">
+                                        {/* Unclickable Today's Appointments */}
+                                        <StatCard
+                                            title="Today's Appointments"
+                                            value={stats.todayAppointments || 0}
+                                            icon={<FaCalendarCheck />}
+                                            bgClass="bg-blue"
+                                        />
+                                        <div onClick={() => setActiveTab('appointments')} style={{ cursor: 'pointer' }}>
+                                            <StatCard
+                                                title="Pending Reports"
+                                                value={stats.pendingReports || 0}
+                                                icon={<FaNotesMedical />}
+                                                bgClass="bg-orange"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
+                                        {/* Next Appointment Widget */}
+                                        <NextAppointmentWidget onViewAll={() => setActiveTab('appointments')} />
+
+                                        {/* Recent Patients Widget */}
+                                        <RecentPatientsWidget onViewAll={() => setActiveTab('patients')} />
+                                    </div>
+                                </>
                             )}
 
                             {/* Receptionist View */}

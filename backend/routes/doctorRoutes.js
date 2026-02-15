@@ -16,5 +16,8 @@ router.get('/appointments', getDoctorAppointments);
 router.post('/appointments/:id/prescription', addPrescription);
 router.get('/patients', require('../controllers/doctorController').getDoctorPatients);
 router.get('/patients/:id/history', require('../controllers/doctorController').getPatientHistory);
+router.put('/appointments/:id/status', require('../controllers/doctorController').updateAppointmentStatus);
+router.get('/next-appointment', require('../controllers/doctorController').getNextAppointment);
+router.get('/recent-patients', require('../controllers/doctorController').getRecentPatients);
 
 module.exports = router;
