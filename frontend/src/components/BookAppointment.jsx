@@ -128,7 +128,7 @@ function BookAppointment({ preSelectedPatient }) {
                 <h3><FaCalendarPlus /> Book Appointment</h3>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '2rem' }}>
+            <div className="appointment-grid">
 
                 {/* Left Column: Patient Selection */}
                 <div className="patient-selection-column">
