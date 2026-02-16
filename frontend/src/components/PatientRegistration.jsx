@@ -61,7 +61,7 @@ function PatientRegistration({ onSuccess }) {
 
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <label style={{ fontSize: '0.8rem', color: '#666' }}>Date of Birth</label>
-                    <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} required style={{ padding: '0.8rem' }} />
+                    <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} required max={new Date().toISOString().split('T')[0]} style={{ padding: '0.8rem' }} />
                 </div>
 
                 <select name="gender" value={formData.gender} onChange={handleChange} style={{ padding: '0.8rem' }}>

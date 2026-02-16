@@ -67,7 +67,7 @@ exports.protect = async (req, res, next) => {
             // Ensure hospitalId is available
             if (user.hospitalId) {
                 req.user.hospitalId = user.hospitalId;
-            } else if (decoded.role === 'hospital_admin') {
+            } else if (decoded.role === 'hospital_admin' || decoded.type === 'hospital') {
                 req.user.hospitalId = user._id;
             }
 

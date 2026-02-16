@@ -310,7 +310,7 @@ exports.addStaff = async (req, res) => {
         const hospitalId = req.user.id;
 
         // Basic validation
-        if (!data.email || !password || !data.firstName || !data.lastName) {
+        if (!data.email || !password || !data.firstName) {
             return res.status(400).json({
                 success: false,
                 message: 'Please provide all required fields'

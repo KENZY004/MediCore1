@@ -55,6 +55,8 @@ function HospitalDashboard() {
         nurseCount: 0,
         todayAppointments: 0,
         pendingReports: 0,
+        pendingAppointments: 0,
+        completedAppointments: 0,
         newPatients: 0
     });
     const [loadingStats, setLoadingStats] = useState(true);
@@ -244,13 +246,22 @@ function HospitalDashboard() {
                                         bgClass="bg-green"
                                         onClick={() => setActiveTab('stats-new-registrations')}
                                     />
-                                    <StatCard
-                                        title="Today's Appointments"
-                                        value={stats.todayAppointments || 0}
-                                        icon={<FaCalendarCheck />}
-                                        bgClass="bg-blue"
-                                        onClick={() => setActiveTab('stats-today-appointments')}
-                                    />
+                                    <div onClick={() => setActiveTab('stats-today-appointments')} style={{ cursor: 'pointer' }}>
+                                        <StatCard
+                                            title="Today's Pending"
+                                            value={stats.pendingAppointments || 0}
+                                            icon={<FaCalendarCheck />}
+                                            bgClass="bg-orange"
+                                        />
+                                    </div>
+                                    <div onClick={() => setActiveTab('stats-today-appointments')} style={{ cursor: 'pointer' }}>
+                                        <StatCard
+                                            title="Today's Completed"
+                                            value={stats.completedAppointments || 0}
+                                            icon={<FaCalendarCheck />}
+                                            bgClass="bg-green"
+                                        />
+                                    </div>
                                 </div>
                             )}
 

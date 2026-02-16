@@ -13,7 +13,8 @@ function BookAppointment({ preSelectedPatient }) {
         doctorId: '',
         date: '',
         time: '',
-        reason: ''
+        reason: '',
+        consultationFee: 500
     });
 
     useEffect(() => {
@@ -84,6 +85,29 @@ function BookAppointment({ preSelectedPatient }) {
         if (!formData.doctorId) {
             alert('Please select a doctor');
             return;
+        }
+
+        // Validate Date and Time
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const todayString = `${year}-${month}-${day}`;
+
+        if (formData.date < todayString) {
+            alert("Cannot book appointment in the past.");
+            return;
+        }
+
+        if (formData.date === todayString) {
+            const currentHours = String(now.getHours()).padStart(2, '0');
+            const currentMinutes = String(now.getMinutes()).padStart(2, '0');
+            const currentTimeString = `${currentHours}:${currentMinutes}`;
+
+            if (formData.time < currentTimeString) {
+                alert("Cannot book appointment for a past time.");
+                return;
+            }
         }
 
         try {
@@ -189,6 +213,11 @@ function BookAppointment({ preSelectedPatient }) {
                         <div className="form-group">
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Reason for Visit</label>
                             <textarea name="reason" value={formData.reason} onChange={handleChange} required rows="3" style={{ width: '100%', padding: '0.8rem', borderRadius: '4px', border: '1px solid #ddd' }} placeholder="e.g. Fever, Checkup, Consultation"></textarea>
+                        </div>
+
+                        <div className="form-group">
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Consultation Fee ($)</label>
+                            <input type="number" name="consultationFee" min="0" value={formData.consultationFee} onChange={handleChange} required style={{ width: '100%', padding: '0.8rem', borderRadius: '4px', border: '1px solid #ddd' }} />
                         </div>
 
                         <button type="submit" className="btn-primary" disabled={!selectedPatient || !formData.doctorId} style={{ padding: '1rem', fontSize: '1rem', fontWeight: 'bold', cursor: (!selectedPatient || !formData.doctorId) ? 'not-allowed' : 'pointer', opacity: (!selectedPatient || !formData.doctorId) ? 0.7 : 1 }}>

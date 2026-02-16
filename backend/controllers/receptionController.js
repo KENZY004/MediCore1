@@ -110,6 +110,7 @@ exports.bookAppointment = async (req, res) => {
             appointmentDate: date,
             appointmentTime: time,
             reason,
+            consultationFee: req.body.consultationFee || 500,
             createdBy: req.user.id,
             status: 'Scheduled'
         });

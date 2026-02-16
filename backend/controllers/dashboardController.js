@@ -2,6 +2,7 @@ const Doctor = require('../models/Doctor');
 const Staff = require('../models/Staff');
 const Patient = require('../models/Patient');
 const Appointment = require('../models/Appointment');
+const Invoice = require('../models/Invoice');
 
 // @desc    Get Hospital Dashboard Stats
 // @route   GET /api/hospital/stats
@@ -22,10 +23,10 @@ exports.getHospitalStats = async (req, res) => {
             Staff.countDocuments({ hospitalId }),
             Patient.countDocuments({ hospitalId }), // Assuming Patient has hospitalId
             Appointment.countDocuments({ hospitalId }), // Assuming Appointment has hospitalId
-            // Simple revenue calculation (sum of consultation fees from completed appointments)
-            Appointment.aggregate([
-                { $match: { hospitalId: req.user.hospitalId, status: 'Completed' } },
-                { $group: { _id: null, total: { $sum: "$amount" } } }
+            // Revenue calculation from Paid Invoices
+            Invoice.aggregate([
+                { $match: { hospitalId: req.user.hospitalId, status: 'Paid' } },
+                { $group: { _id: null, total: { $sum: "$totalAmount" } } }
             ])
         ]);
 
@@ -111,7 +112,7 @@ exports.getReceptionStats = async (req, res) => {
         const endOfDay = new Date();
         endOfDay.setHours(23, 59, 59, 999);
 
-        const [newPatients, todayAppointments] = await Promise.all([
+        const [newPatients, pendingAppointments, completedAppointments] = await Promise.all([
             Patient.countDocuments({
                 hospitalId,
                 createdAt: { $gte: startOfDay, $lte: endOfDay }
@@ -119,7 +120,12 @@ exports.getReceptionStats = async (req, res) => {
             Appointment.countDocuments({
                 hospitalId,
                 appointmentDate: { $gte: startOfDay, $lte: endOfDay },
-                status: { $ne: 'Cancelled' }
+                status: 'Scheduled'
+            }),
+            Appointment.countDocuments({
+                hospitalId,
+                appointmentDate: { $gte: startOfDay, $lte: endOfDay },
+                status: 'Completed'
             })
         ]);
 
@@ -127,7 +133,9 @@ exports.getReceptionStats = async (req, res) => {
             success: true,
             data: {
                 newPatients,
-                todayAppointments
+                pendingAppointments,
+                completedAppointments,
+                todayAppointments: pendingAppointments + completedAppointments // Keep total for backward compat if needed
             }
         });
 

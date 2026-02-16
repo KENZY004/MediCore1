@@ -1,0 +1,15 @@
+{
+  "serverTime": "Mon Feb 16 2026 21:54:02 GMT+0530 (India Standard Time)",
+  "startOfDay": "Mon Feb 16 2026 00:00:00 GMT+0530 (India Standard Time)",
+  "endOfDay": "Mon Feb 16 2026 23:59:59 GMT+0530 (India Standard Time)",
+  "appointments": [
+    {
+      "id": "69933604371107217a5cc4d9",
+      "date": "2026-02-17T00:00:00.000Z",
+      "dateLocal": "Tue Feb 17 2026 05:30:00 GMT+0530 (India Standard Time)",
+      "status": "Scheduled",
+      "hospitalId": "6991b3c5855e096229aa8242",
+      "matchToday": false
+    }
+  ]
+}

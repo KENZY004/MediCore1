@@ -307,16 +307,13 @@ function StaffManagement() {
                                 <label style={{ fontSize: '0.9rem', color: '#555', marginBottom: '0.3rem', display: 'block' }}>Role Type</label>
                                 <select name="role" value={formData.role} onChange={handleInputChange} style={{ width: '100%', padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px' }} disabled={!!editingId}>
                                     <option value="Doctor">Doctor</option>
-                                    <option value="Nurse">Nurse</option>
                                     <option value="Receptionist">Receptionist</option>
-                                    <option value="Pharmacist">Pharmacist</option>
-                                    <option value="Accountant">Accountant</option>
                                 </select>
                             </div>
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                 <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleInputChange} required style={{ padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px' }} />
-                                <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleInputChange} required style={{ padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px' }} />
+                                <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleInputChange} style={{ padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px' }} />
                             </div>
 
                             <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleInputChange} required style={{ padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px' }} />
