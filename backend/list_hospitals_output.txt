@@ -1,4 +1,0 @@
-Found 3 hospitals:
-- Test Hospital 8553 | Email: hospital8553@test.com | Reg: REG8553 | Lic: LIC8553
-- City General Hospital | Email: test@hospital.com | Reg: REG123456 | Lic: LIC987654
-- City General Hospital | Email: h1@gmail.com | Reg: REG_H1_VERIFY_1770908889298 | Lic: LIC_H1_VERIFY_1770908889298
