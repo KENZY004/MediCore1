@@ -541,3 +541,142 @@
         opacity: 1;
     }
 }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        width: 260px;
+        box-shadow: var(--shadow-xl);
+    }
+
+    .sidebar.mobile-open {
+        transform: translateX(0);
+    }
+
+    .main-content {
+        margin-left: 0;
+        padding: 1.5rem;
+    }
+
+    .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .top-actions {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .mobile-menu-btn {
+        display: block;
+        /* Visible on mobile */
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: var(--text-primary);
+        cursor: pointer;
+        margin-right: 1rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+        /* Stack cards on mobile */
+    }
+
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .card-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .search-bar {
+        width: 100%;
+    }
+
+    .status-filter {
+        width: 100%;
+    }
+
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 90;
+        backdrop-filter: blur(2px);
+    }
+}
+
+.staff-grid-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.column-header {
+    margin-bottom: 1rem;
+    color: #2c3e50;
+    border-bottom-width: 2px;
+    border-bottom-style: solid;
+    padding-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.doctor-header {
+    border-bottom-color: #3498db;
+}
+
+.nurse-header {
+    border-bottom-color: #27ae60;
+}
+}
+
+/* Hide mobile button on desktop */
+@media (min-width: 769px) {
+    .staff-grid-container {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 2rem;
+    }
+
+    .column-header {
+        margin-bottom: 1rem;
+        color: #2c3e50;
+        border-bottom-width: 2px;
+        border-bottom-style: solid;
+        padding-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .doctor-header {
+        border-bottom-color: #3498db;
+    }
+
+    .nurse-header {
+        border-bottom-color: #27ae60;
+    }
+
+    .mobile-menu-btn {
+        display: none;
+    }
+
+    .overlay {
+        display: none;
+    }
+}

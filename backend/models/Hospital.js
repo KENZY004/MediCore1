@@ -171,6 +171,7 @@ hospitalSchema.methods.comparePassword = async function (candidatePassword) {
 hospitalSchema.methods.getPublicProfile = function () {
     const hospital = this.toObject();
     delete hospital.password;
+    hospital.role = 'hospital_admin'; // Explicitly add role for frontend
     return hospital;
 };
 

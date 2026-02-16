@@ -216,7 +216,7 @@ function BookAppointment({ preSelectedPatient }) {
                         </div>
 
                         <div className="form-group">
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Consultation Fee ($)</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Consultation Fee (₹)</label>
                             <input type="number" name="consultationFee" min="0" value={formData.consultationFee} onChange={handleChange} required style={{ width: '100%', padding: '0.8rem', borderRadius: '4px', border: '1px solid #ddd' }} />
                         </div>
 

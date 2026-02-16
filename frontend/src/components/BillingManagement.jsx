@@ -248,7 +248,7 @@ function BillingManagement() {
                                 <tr key={invoice._id} style={{ borderBottom: '1px solid #eee' }}>
                                     <td style={{ padding: '1rem', fontWeight: '500', color: '#333' }}>{invoice.patientName}</td>
                                     <td style={{ padding: '1rem', color: '#666' }}>{new Date(invoice.date).toLocaleDateString()}</td>
-                                    <td style={{ padding: '1rem', fontWeight: '600' }}>${invoice.totalAmount}</td>
+                                    <td style={{ padding: '1rem', fontWeight: '600' }}>₹{invoice.totalAmount}</td>
                                     <td style={{ padding: '1rem' }}>
                                         <span style={statusBadgeStyle(invoice.status)}>
                                             {invoice.status}
@@ -333,7 +333,7 @@ function BillingManagement() {
                             </div>
 
                             <div style={{ textAlign: 'right', fontWeight: 'bold', fontSize: '1.1rem', marginTop: '0.5rem' }}>
-                                Total: ${formData.items.reduce((sum, item) => sum + Number(item.cost), 0)}
+                                Total: ₹{formData.items.reduce((sum, item) => sum + Number(item.cost), 0)}
                             </div>
 
                             <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>

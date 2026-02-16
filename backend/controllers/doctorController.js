@@ -203,6 +203,22 @@ exports.updateAppointmentStatus = async (req, res) => {
             });
         }
 
+        // Prevent completing future appointments
+        if (status === 'Completed') {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const appointmentDate = new Date(appointment.appointmentDate);
+            appointmentDate.setHours(0, 0, 0, 0);
+
+            if (appointmentDate > today) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Cannot mark future appointments as completed'
+                });
+            }
+        }
+
         appointment.status = status;
         await appointment.save();
 

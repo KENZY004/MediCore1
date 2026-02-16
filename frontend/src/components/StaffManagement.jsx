@@ -176,7 +176,14 @@ function StaffManagement() {
 
     return (
         <div className="staff-management">
-            <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <div className="section-header" style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '2rem',
+                flexWrap: 'wrap', // Allow wrapping
+                gap: '1rem' // Add gap for wrapped items
+            }}>
                 <h2>Manage Staff</h2>
                 <button style={btnPrimaryStyle} onClick={openAddModal}>
                     <FaPlus /> Add New Staff
@@ -184,14 +191,14 @@ function StaffManagement() {
             </div>
 
             {loading ? <p>Loading staff...</p> : (
-                <div className="staff-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '2rem' }}>
+                <div className="staff-grid-container">
                     {/* Doctors Column */}
-                    <div>
-                        <h3 style={{ marginBottom: '1rem', color: '#2c3e50', borderBottom: '2px solid #3498db', paddingBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div className="staff-column">
+                        <h3 className="column-header doctor-header">
                             <FaUserMd style={{ color: '#3498db' }} /> Doctors
                         </h3>
-                        <div className="table-container" style={{ background: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
-                            <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <div className="table-responsive" style={{ background: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                            <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}> {/* minWidth ensures scroll */}
                                 <thead>
                                     <tr style={{ background: '#f8f9fa', textAlign: 'left', borderBottom: '1px solid #eee' }}>
                                         <th style={{ padding: '1rem' }}>Name</th>
@@ -231,12 +238,12 @@ function StaffManagement() {
                     </div>
 
                     {/* Other Staff Column */}
-                    <div>
-                        <h3 style={{ marginBottom: '1rem', color: '#2c3e50', borderBottom: '2px solid #27ae60', paddingBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div className="staff-column">
+                        <h3 className="column-header nurse-header">
                             <FaUserNurse style={{ color: '#27ae60' }} /> Support Staff
                         </h3>
-                        <div className="table-container" style={{ background: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
-                            <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <div className="table-responsive" style={{ background: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                            <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
                                 <thead>
                                     <tr style={{ background: '#f8f9fa', textAlign: 'left', borderBottom: '1px solid #eee' }}>
                                         <th style={{ padding: '1rem' }}>Name</th>
@@ -292,7 +299,13 @@ function StaffManagement() {
                     backdropFilter: 'blur(2px)'
                 }}>
                     <div className="modal-content" style={{
-                        backgroundColor: '#fff', padding: '2rem', borderRadius: '12px', width: '500px', maxHeight: '90vh', overflowY: 'auto',
+                        backgroundColor: '#fff',
+                        padding: '2rem',
+                        borderRadius: '12px',
+                        width: '90%', // Responsive width
+                        maxWidth: '500px', // Max width constraint
+                        maxHeight: '90vh',
+                        overflowY: 'auto',
                         boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
                     }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
@@ -311,9 +324,9 @@ function StaffManagement() {
                                 </select>
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleInputChange} required style={{ padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px' }} />
-                                <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleInputChange} style={{ padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px' }} />
+                            <div className="form-row-responsive" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                                <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleInputChange} required style={{ flex: 1, padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px', minWidth: '150px' }} />
+                                <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleInputChange} style={{ flex: 1, padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px', minWidth: '150px' }} />
                             </div>
 
                             <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleInputChange} required style={{ padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px' }} />

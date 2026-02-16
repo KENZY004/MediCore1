@@ -52,15 +52,15 @@ function PatientList({ readOnly = false }) {
 
     return (
         <div className="patient-list-container">
-            <div className="section-header" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="section-header" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                 <h3><FaUsers /> Patient List</h3>
-                <div className="search-bar" style={{ position: 'relative' }}>
+                <div className="search-bar" style={{ position: 'relative', width: 'auto', flexGrow: 1, maxWidth: '300px' }}>
                     <input
                         type="text"
                         placeholder="Search Patients..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{ padding: '0.5rem 2rem 0.5rem 1rem', borderRadius: '20px', border: '1px solid #ddd' }}
+                        style={{ padding: '0.5rem 2rem 0.5rem 1rem', borderRadius: '20px', border: '1px solid #ddd', width: '100%' }}
                     />
                     <FaSearch style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: '#888' }} />
                 </div>

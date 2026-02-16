@@ -202,17 +202,20 @@ function DoctorAppointments() {
                                                 <button
                                                     onClick={() => handleStatusUpdate(apt._id, 'Completed')}
                                                     className="btn-sm"
+                                                    disabled={new Date(apt.appointmentDate) > new Date().setHours(23, 59, 59, 999)} // Disable if date is strictly in the future (tomorrow onwards)
+                                                    title={new Date(apt.appointmentDate) > new Date().setHours(23, 59, 59, 999) ? "Cannot complete future appointments" : "Mark as Done"}
                                                     style={{
                                                         padding: '0.4rem 0.8rem',
-                                                        backgroundColor: '#2ecc71',
+                                                        backgroundColor: new Date(apt.appointmentDate) > new Date().setHours(23, 59, 59, 999) ? '#ccc' : '#2ecc71',
                                                         color: 'white',
                                                         border: 'none',
                                                         borderRadius: '4px',
-                                                        cursor: 'pointer',
+                                                        cursor: new Date(apt.appointmentDate) > new Date().setHours(23, 59, 59, 999) ? 'not-allowed' : 'pointer',
                                                         fontSize: '0.8rem',
                                                         display: 'flex',
                                                         alignItems: 'center',
-                                                        gap: '0.3rem'
+                                                        gap: '0.3rem',
+                                                        opacity: new Date(apt.appointmentDate) > new Date().setHours(23, 59, 59, 999) ? 0.7 : 1
                                                     }}
                                                 >
                                                     <FaCalendarCheck /> Mark Done

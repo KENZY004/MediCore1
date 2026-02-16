@@ -16,39 +16,51 @@ export const AuthProvider = ({ children }) => {
     const [token, setToken] = useState(localStorage.getItem('token'));
     const [loading, setLoading] = useState(true);
 
+    const loadUser = async (currentToken) => {
+        if (!currentToken) {
+            setLoading(false);
+            return;
+        }
+
+        try {
+            // Set header for this request specifically if not already set globally
+            // api.js interceptor usually handles this if token is in localStorage
+
+            const { data } = await api.get('/auth/me');
+            if (data.success) {
+                setUser(data.user);
+            }
+        } catch (error) {
+            console.error("Failed to load user", error);
+            localStorage.removeItem('token');
+            setToken(null);
+            setUser(null);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Initialize state from localStorage on mount
     useEffect(() => {
-        const initAuth = async () => {
-            const storedToken = localStorage.getItem('token');
-            const storedUser = localStorage.getItem('user');
-
-            if (storedToken && storedUser) {
-                setToken(storedToken);
-                try {
-                    setUser(JSON.parse(storedUser));
-                } catch (e) {
-                    console.error("Failed to parse stored user", e);
-                    localStorage.removeItem('user');
-                }
-            }
+        const storedToken = localStorage.getItem('token');
+        if (storedToken) {
+            loadUser(storedToken);
+        } else {
             setLoading(false);
-        };
-        initAuth();
+        }
     }, []);
 
     const login = (userData, authToken) => {
         setToken(authToken);
         setUser(userData);
-
         localStorage.setItem('token', authToken);
-        localStorage.setItem('user', JSON.stringify(userData));
+        // Do NOT store user object in localStorage
     };
 
     const logout = () => {
         setUser(null);
         setToken(null);
         localStorage.removeItem('token');
-        localStorage.removeItem('user');
     };
 
     const value = {

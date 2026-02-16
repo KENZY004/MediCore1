@@ -226,11 +226,42 @@ const jwt = require('jsonwebtoken');
 // @access  Private
 exports.getMe = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id);
+        // req.user is set by auth middleware
+        const user = req.user;
+        const role = user.role;
+        let userType = 'patient'; // Default
+
+        // Determine userType similar to login logic
+        if (role === 'super_admin' || role === 'admin') userType = 'admin';
+        else if (role === 'hospital_admin') userType = 'hospital';
+        else if (role === 'doctor' || role === 'receptionist' || role === 'billing' || role === 'nurse') userType = 'hospital_staff';
+
+        // Construct response similar to login
+        const userData = {
+            id: user._id,
+            name: user.name || user.firstName + ' ' + user.lastName,
+            email: user.email,
+            role: role,
+            userType: userType,
+            hospitalId: user.hospitalId, // vital for dashboard access
+            specialization: user.specialization,
+            department: user.departmentId
+        };
+
+        // Handle hardcoded super admin case if needed (though middleware usually handles object attachment)
+        if (user.id === 'super_admin_hardcoded') {
+            Object.assign(userData, {
+                id: 'super_admin_hardcoded',
+                name: 'Super Admin',
+                email: 'kenznajeeb@gmail.com',
+                role: 'super_admin',
+                userType: 'admin'
+            });
+        }
 
         res.status(200).json({
             success: true,
-            user,
+            user: userData,
         });
     } catch (error) {
         console.error('Get me error:', error);

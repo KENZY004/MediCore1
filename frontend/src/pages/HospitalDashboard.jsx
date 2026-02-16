@@ -6,8 +6,12 @@ import {
     FaSignOutAlt, FaHospital, FaUserMd,
     FaCalendarCheck, FaChartPie, FaPlus,
     FaSearch, FaBell, FaUsers, FaUserPlus,
-    FaFileInvoiceDollar, FaNotesMedical
+    FaFileInvoiceDollar, FaNotesMedical, FaBars, FaTimes
 } from 'react-icons/fa';
+
+// Renamed for clarity in usage below
+const FaBarsIcon = FaBars;
+const FaTimesWithMargin = FaTimes;
 import './Dashboard.css';
 
 import StaffManagement from '../components/StaffManagement';
@@ -27,6 +31,15 @@ function HospitalDashboard() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('dashboard');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    const toggleMobileMenu = () => {
+        setIsMobileMenuOpen(!isMobileMenuOpen);
+    };
+
+    const closeMobileMenu = () => {
+        setIsMobileMenuOpen(false);
+    };
 
     const handleLogout = () => {
         logout();
@@ -89,26 +102,33 @@ function HospitalDashboard() {
 
     return (
         <div className="dashboard-layout">
+            {/* Mobile Overlay */}
+            {isMobileMenuOpen && <div className="overlay" onClick={closeMobileMenu}></div>}
+
             {/* Sidebar */}
-            <aside className="sidebar">
+            <aside className={`sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
                 <div className="sidebar-header">
                     <img src="/LogoNew.png" alt="Logo" className="brand-logo" />
                     <span className="brand-text">ZenoCare</span>
+                    {/* Close button for mobile sidebar */}
+                    <button className="mobile-menu-btn" onClick={closeMobileMenu} style={{ marginLeft: 'auto', fontSize: '1.2rem' }}>
+                        <FaTimesWithMargin />
+                    </button>
                 </div>
 
                 <nav className="nav-menu">
                     {/* Common for all */}
-                    <button onClick={() => setActiveTab('dashboard')} className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
+                    <button onClick={() => { setActiveTab('dashboard'); closeMobileMenu(); }} className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
                         <FaChartPie className="nav-icon" /> Dashboard
                     </button>
 
                     {/* Hospital Admin Links */}
                     {hasRole(['hospital_admin']) && (
                         <>
-                            <button onClick={() => setActiveTab('profile')} className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
+                            <button onClick={() => { setActiveTab('profile'); closeMobileMenu(); }} className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
                                 <FaHospital className="nav-icon" /> Hospital Profile
                             </button>
-                            <button onClick={() => setActiveTab('staff')} className={`nav-item ${activeTab === 'staff' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
+                            <button onClick={() => { setActiveTab('staff'); closeMobileMenu(); }} className={`nav-item ${activeTab === 'staff' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
                                 <FaUserMd className="nav-icon" /> Manage Staff
                             </button>
                         </>
@@ -117,10 +137,10 @@ function HospitalDashboard() {
                     {/* Doctor Links */}
                     {hasRole(['doctor']) && (
                         <>
-                            <button onClick={() => setActiveTab('appointments')} className={`nav-item ${activeTab === 'appointments' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
+                            <button onClick={() => { setActiveTab('appointments'); closeMobileMenu(); }} className={`nav-item ${activeTab === 'appointments' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
                                 <FaCalendarCheck className="nav-icon" /> My Appointments
                             </button>
-                            <button onClick={() => setActiveTab('patients')} className={`nav-item ${activeTab === 'patients' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
+                            <button onClick={() => { setActiveTab('patients'); closeMobileMenu(); }} className={`nav-item ${activeTab === 'patients' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
                                 <FaNotesMedical className="nav-icon" /> My Patients
                             </button>
                         </>
@@ -129,13 +149,13 @@ function HospitalDashboard() {
                     {/* Receptionist Links */}
                     {hasRole(['receptionist']) && (
                         <>
-                            <button onClick={() => setActiveTab('register-patient')} className={`nav-item ${activeTab === 'register-patient' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
+                            <button onClick={() => { setActiveTab('register-patient'); closeMobileMenu(); }} className={`nav-item ${activeTab === 'register-patient' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
                                 <FaUserPlus className="nav-icon" /> Register Patient
                             </button>
-                            <button onClick={() => setActiveTab('book-appointment')} className={`nav-item ${activeTab === 'book-appointment' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
+                            <button onClick={() => { setActiveTab('book-appointment'); closeMobileMenu(); }} className={`nav-item ${activeTab === 'book-appointment' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
                                 <FaCalendarCheck className="nav-icon" /> Book Appointment
                             </button>
-                            <button onClick={() => setActiveTab('patient-list')} className={`nav-item ${activeTab === 'patient-list' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
+                            <button onClick={() => { setActiveTab('patient-list'); closeMobileMenu(); }} className={`nav-item ${activeTab === 'patient-list' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
                                 <FaUsers className="nav-icon" /> All Patients
                             </button>
                         </>
@@ -143,7 +163,7 @@ function HospitalDashboard() {
 
                     {/* Billing Links */}
                     {hasRole(['billing', 'hospital_admin']) && (
-                        <button onClick={() => setActiveTab('billing')} className={`nav-item ${activeTab === 'billing' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
+                        <button onClick={() => { setActiveTab('billing'); closeMobileMenu(); }} className={`nav-item ${activeTab === 'billing' ? 'active' : ''}`} style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}>
                             <FaFileInvoiceDollar className="nav-icon" /> Billing & Invoices
                         </button>
                     )}
@@ -170,9 +190,14 @@ function HospitalDashboard() {
             <main className="main-content">
                 {/* Top Bar */}
                 <header className="top-bar">
-                    <div className="welcome-text">
-                        <h1>Welcome back, {user?.name}</h1>
-                        <p>{currentDate}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <button className="mobile-menu-btn" onClick={toggleMobileMenu}>
+                            <FaBarsIcon />
+                        </button>
+                        <div className="welcome-text">
+                            <h1>Welcome back, {user?.name}</h1>
+                            <p>{currentDate}</p>
+                        </div>
                     </div>
 
                     <div className="top-actions">
@@ -197,7 +222,7 @@ function HospitalDashboard() {
                                         <StatCard title="Total Patients" value={stats.totalPatients || 0} icon={<FaUsers />} bgClass="bg-green" />
                                     </div>
                                     <div onClick={() => setActiveTab('billing')} style={{ cursor: 'pointer' }}>
-                                        <StatCard title="Total Revenue" value={`$${stats.totalRevenue || 0}`} icon={<FaFileInvoiceDollar />} bgClass="bg-purple" />
+                                        <StatCard title="Total Revenue" value={`₹${stats.totalRevenue || 0}`} icon={<FaFileInvoiceDollar />} bgClass="bg-purple" />
                                     </div>
                                     <div onClick={() => setActiveTab('appointments')} style={{ cursor: 'pointer' }}>
                                         <StatCard title="Total Appointments" value={stats.totalAppointments || 0} icon={<FaCalendarCheck />} bgClass="bg-orange" />

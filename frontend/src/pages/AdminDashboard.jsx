@@ -5,8 +5,12 @@ import api from '../utils/api';
 import {
     FaSignOutAlt, FaChartPie, FaHospital, FaCheckCircle,
     FaTimesCircle, FaBan, FaSearch, FaEllipsisV, FaBuilding,
-    FaPhoneAlt, FaEnvelope, FaUserShield, FaMapMarkerAlt
+    FaPhoneAlt, FaEnvelope, FaUserShield, FaMapMarkerAlt, FaBars, FaTimes
 } from 'react-icons/fa';
+
+// Renamed for clarity in usage above (FaBarsIcon, FaTimesWithMargin)
+const FaBarsIcon = FaBars;
+const FaTimesWithMargin = FaTimes;
 import './Dashboard.css';
 
 // ... (existing code until return statement of AdminDashboard component, no changes to logic)
@@ -31,10 +35,19 @@ function AdminDashboard() {
     const [selectedHospital, setSelectedHospital] = useState(null);
     const [showAdminModal, setShowAdminModal] = useState(false);
     const [hospitalStatusFilter, setHospitalStatusFilter] = useState('all'); // all, pending, approved, rejected
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const handleLogout = () => {
         logout();
         navigate('/login');
+    };
+
+    const toggleMobileMenu = () => {
+        setIsMobileMenuOpen(!isMobileMenuOpen);
+    };
+
+    const closeMobileMenu = () => {
+        setIsMobileMenuOpen(false);
     };
 
     const handleViewAdmin = (hospital) => {
@@ -128,18 +141,25 @@ function AdminDashboard() {
 
     return (
         <div className="dashboard-layout">
+            {/* Mobile Overlay */}
+            {isMobileMenuOpen && <div className="overlay" onClick={closeMobileMenu}></div>}
+
             {/* Sidebar */}
-            <aside className="sidebar">
+            <aside className={`sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
                 <div className="sidebar-header">
                     <img src="/LogoNew.png" alt="Logo" className="brand-logo" />
                     <span className="brand-text">ZenoCare</span>
+                    {/* Close button for mobile sidebar */}
+                    <button className="mobile-menu-btn" onClick={closeMobileMenu} style={{ marginLeft: 'auto', fontSize: '1.2rem' }}>
+                        <FaTimesWithMargin />
+                    </button>
                 </div>
 
                 <nav className="nav-menu">
-                    <button onClick={() => setActiveTab('dashboard')} className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}>
+                    <button onClick={() => { setActiveTab('dashboard'); closeMobileMenu(); }} className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}>
                         <FaChartPie className="nav-icon" /> Dashboard
                     </button>
-                    <button onClick={() => setActiveTab('hospitals')} className={`nav-item ${activeTab === 'hospitals' ? 'active' : ''}`}>
+                    <button onClick={() => { setActiveTab('hospitals'); closeMobileMenu(); }} className={`nav-item ${activeTab === 'hospitals' ? 'active' : ''}`}>
                         <FaHospital className="nav-icon" /> Hospitals
                     </button>
                 </nav>
@@ -161,9 +181,14 @@ function AdminDashboard() {
             {/* Main Content */}
             <main className="main-content">
                 <header className="top-bar">
-                    <div className="welcome-text">
-                        <h1>Admin Dashboard</h1>
-                        <p>{currentDate}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <button className="mobile-menu-btn" onClick={toggleMobileMenu}>
+                            <FaBarsIcon />
+                        </button>
+                        <div className="welcome-text">
+                            <h1>Admin Dashboard</h1>
+                            <p>{currentDate}</p>
+                        </div>
                     </div>
                     <div className="top-actions">
                         <div className="role-indicator">
