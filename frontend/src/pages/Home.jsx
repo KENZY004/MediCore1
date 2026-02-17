@@ -84,101 +84,43 @@ function Home() {
                 </div>
             </header>
 
-            {/* Trusted By Section (New) */}
-            <section className="trusted-by">
-                <p className="trusted-title">Trusted by 500+ Top Healthcare Institutions</p>
-                <div className="logos-grid">
-                    {/* Placeholders for logos - in prod use real SVGs */}
-                    <h4 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#94a3b8' }}>APOLLO</h4>
-                    <h4 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#94a3b8' }}>FORTIS</h4>
-                    <h4 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#94a3b8' }}>MAX HEALTH</h4>
-                    <h4 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#94a3b8' }}>MANIPAL</h4>
-                    <h4 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#94a3b8' }}>MEDANTA</h4>
-                </div>
-            </section>
-
             {/* Features Section */}
             <section className="features">
                 <h2 className="section-title">Comprehensive Solutions</h2>
                 <p className="section-subtitle">
-                    Everything you need to run a modern medical facility, from patient intake to billing and analytics.
+                    Everything you need to run a modern medical facility, from patient management to billing.
                 </p>
                 <div className="features-grid">
                     <FeatureCard
-                        icon={<FaBuilding />}
-                        title="OPD & IPD Management"
-                        description="Seamlessly manage outpatient flow and inpatient admissions with digital bed tracking."
-                    />
-                    <FeatureCard
-                        icon={<FaChartLine />}
-                        title="Real-time Analytics"
-                        description="Actionable insights into revenue, patient footfall, and operational bottlenecks."
-                    />
-                    <FeatureCard
                         icon={<FaUserMd />}
-                        title="Staff & HR Portal"
-                        description="Manage doctors' shifts, payroll, and performance via a dedicated portal."
-                    />
-                    <FeatureCard
-                        icon={<FaShieldAlt />}
-                        title="Bank-Grade Security"
-                        description="HIPAA & GDPR compliant data encryption ensures patient privacy is never compromised."
-                    />
-                    <FeatureCard
-                        icon={<FaCheckCircle />}
-                        title="Insurance & Billing"
-                        description="Automated claim processing and integrated billing engine for faster revenue cycles."
+                        title="Patient Management"
+                        description="Complete patient registration, records management, and appointment scheduling system."
                     />
                     <FeatureCard
                         icon={<FaHospital />}
-                        title="Telemedicine Ready"
-                        description="Integrated video consultation suite to expand your reach beyond the hospital walls."
+                        title="Appointment System"
+                        description="Book, track, and manage patient appointments with automated reminders and scheduling."
                     />
-                </div>
-            </section>
-
-            {/* Stats Section */}
-            <section className="stats">
-                <div className="stats-grid">
-                    <div className="stat-item">
-                        <span className="stat-number">5M+</span>
-                        <span className="stat-label">Patients Served</span>
-                    </div>
-                    <div className="stat-item">
-                        <span className="stat-number">1200+</span>
-                        <span className="stat-label">Facilities</span>
-                    </div>
-                    <div className="stat-item">
-                        <span className="stat-number">99.99%</span>
-                        <span className="stat-label">System Uptime</span>
-                    </div>
-                </div>
-            </section>
-
-            {/* Testimonials (New) */}
-            <section className="testimonials">
-                <h2 className="section-title">What Administrators Say</h2>
-                <div className="features-grid" style={{ maxWidth: '1000px' }}>
-                    <div className="testimonial-card">
-                        <FaQuoteLeft style={{ color: '#0066cc', fontSize: '2rem', marginBottom: '1rem' }} />
-                        <p className="testimonial-text">
-                            "ZenoCare transformed our chaotic paper records into a streamlined digital workflow. Efficiency improved by 40% in just two months."
-                        </p>
-                        <div className="testimonial-author">
-                            <h4>Dr. Sarah Williams</h4>
-                            <span>Chief Medical Officer, City General</span>
-                        </div>
-                    </div>
-                    <div className="testimonial-card">
-                        <FaQuoteLeft style={{ color: '#0066cc', fontSize: '2rem', marginBottom: '1rem' }} />
-                        <p className="testimonial-text">
-                            "The analytics dashboard alone is worth the investment. We can finally make data-driven decisions for staffing and resource allocation."
-                        </p>
-                        <div className="testimonial-author">
-                            <h4>James Chen</h4>
-                            <span>Director, Metropolitan Health</span>
-                        </div>
-                    </div>
+                    <FeatureCard
+                        icon={<FaBuilding />}
+                        title="Staff & Doctor Portal"
+                        description="Dedicated portals for doctors and staff with role-based access and management tools."
+                    />
+                    <FeatureCard
+                        icon={<FaCheckCircle />}
+                        title="Billing & Invoicing"
+                        description="Integrated billing system with invoice generation and payment tracking."
+                    />
+                    <FeatureCard
+                        icon={<FaShieldAlt />}
+                        title="Secure Authentication"
+                        description="Multi-role authentication system with JWT tokens and encrypted data storage."
+                    />
+                    <FeatureCard
+                        icon={<FaChartLine />}
+                        title="Digital Prescriptions"
+                        description="Doctors can create and manage digital prescriptions with medication tracking."
+                    />
                 </div>
             </section>
 
@@ -187,20 +129,20 @@ function Home() {
                 <h2 className="section-title">Frequently Asked Questions</h2>
                 <div className="faq-container">
                     <FaqItem
-                        question="Is the platform HIPAA compliant?"
-                        answer="Yes, ZenoCare is fully HIPAA and GDPR compliant. We use AES-256 encryption for all patient data at rest and in transit."
+                        question="What technologies power ZenoCare?"
+                        answer="ZenoCare is built using the MERN stack (MongoDB, Express.js, React, Node.js) with JWT authentication and cloud database hosting on MongoDB Atlas."
                         isOpen={openFaq === 0}
                         onClick={() => toggleFaq(0)}
                     />
                     <FaqItem
-                        question="Can I migrate data from my old system?"
-                        answer="Absolutely. Our onboarding team provides free data migration services from most legacy hospital management systems."
+                        question="What features are currently available?"
+                        answer="The system includes patient management, appointment scheduling, staff management, billing & invoicing, digital prescriptions, and role-based access for admins, hospitals, doctors, and receptionists."
                         isOpen={openFaq === 1}
                         onClick={() => toggleFaq(1)}
                     />
                     <FaqItem
-                        question="Is there a limit on the number of users?"
-                        answer="No. ZenoCare offers unlimited user seats for doctors, nurses, and admin staff on all our enterprise plans."
+                        question="Is this a production-ready system?"
+                        answer="ZenoCare is a comprehensive college project demonstrating full-stack development skills. It includes core HMS functionality and can be extended for production use with additional security hardening and compliance features."
                         isOpen={openFaq === 2}
                         onClick={() => toggleFaq(2)}
                     />
@@ -214,14 +156,7 @@ function Home() {
                     Ready to modernize your hospital? Our team is here to help.
                 </p>
                 <div className="contact-card">
-                    <div className="contact-info" style={{ display: 'flex', justifyContent: 'center', gap: '2rem', marginBottom: '2rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <FaPhone style={{ color: '#0066cc' }} /> <span>+1 (555) 123-4567</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <FaEnvelope style={{ color: '#0066cc' }} /> <span>contact@zenocare.com</span>
-                        </div>
-                    </div>
+                    <h3 style={{ textAlign: 'center', fontSize: '1.5rem', marginBottom: '2rem', color: '#1e293b' }}>Send Us a Message</h3>
 
                     <form className="contact-form" onSubmit={handleContactSubmit}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>

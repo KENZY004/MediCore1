@@ -30,12 +30,13 @@ Thumbs.db
 
 # Logs
 logs/
-# Documentation
-*.md
+*.log
+
+# Documentation (keep README.md)
 implementation_plan.md
 task.md
 todo.md
-*.log
+EMAIL_SETUP_GUIDE.md
 
 
 # Testing
