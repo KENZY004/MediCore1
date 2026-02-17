@@ -70,6 +70,7 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/hospital', require('./routes/hospitalRoutes')); // Note: singular 'hospital' to match other refs, or check frontend
 app.use('/api/doctor', require('./routes/doctorRoutes'));
 app.use('/api/reception', require('./routes/receptionRoutes'));
+app.use('/api/contact', require('./routes/contactRoutes'));
 
 // 404 handler
 app.use((req, res) => {

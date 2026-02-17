@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import api from '../utils/api';
 import {
     FaHospital, FaUserMd, FaChartLine, FaShieldAlt,
     FaArrowRight, FaCheckCircle, FaBuilding, FaQuoteLeft,
@@ -11,8 +12,39 @@ function Home() {
     // Simple state for FAQ accordion (optional interaction)
     const [openFaq, setOpenFaq] = useState(null);
 
+    // Contact Form State
+    const [contactForm, setContactForm] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        hospitalName: '',
+        message: ''
+    });
+    const [contactLoading, setContactLoading] = useState(false);
+
     const toggleFaq = (index) => {
         setOpenFaq(openFaq === index ? null : index);
+    };
+
+    const handleContactChange = (e) => {
+        setContactForm({ ...contactForm, [e.target.name]: e.target.value });
+    };
+
+    const handleContactSubmit = async (e) => {
+        e.preventDefault();
+        setContactLoading(true);
+        try {
+            const { data } = await api.post('/contact', contactForm);
+            if (data.success) {
+                alert('Message sent successfully!');
+                setContactForm({ firstName: '', lastName: '', email: '', hospitalName: '', message: '' });
+            }
+        } catch (error) {
+            console.error(error);
+            alert(error.response?.data?.message || 'Failed to send message. Please try again.');
+        } finally {
+            setContactLoading(false);
+        }
     };
 
     return (
@@ -191,16 +223,55 @@ function Home() {
                         </div>
                     </div>
 
-                    <form className="contact-form">
+                    <form className="contact-form" onSubmit={handleContactSubmit}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                            <input type="text" placeholder="First Name" />
-                            <input type="text" placeholder="Last Name" />
+                            <input
+                                type="text"
+                                name="firstName"
+                                placeholder="First Name"
+                                value={contactForm.firstName}
+                                onChange={handleContactChange}
+                                required
+                            />
+                            <input
+                                type="text"
+                                name="lastName"
+                                placeholder="Last Name"
+                                value={contactForm.lastName}
+                                onChange={handleContactChange}
+                                required
+                            />
                         </div>
-                        <input type="email" placeholder="Work Email" />
-                        <input type="text" placeholder="Hospital / Organization Name" />
-                        <textarea rows="4" placeholder="How can we help you?"></textarea>
-                        <button type="button" className="btn-large btn-glow" style={{ width: '100%', justifyContent: 'center', marginTop: '1rem' }}>
-                            Send Message
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="Work Email"
+                            value={contactForm.email}
+                            onChange={handleContactChange}
+                            required
+                        />
+                        <input
+                            type="text"
+                            name="hospitalName"
+                            placeholder="Hospital / Organization Name"
+                            value={contactForm.hospitalName}
+                            onChange={handleContactChange}
+                        />
+                        <textarea
+                            rows="4"
+                            name="message"
+                            placeholder="How can we help you?"
+                            value={contactForm.message}
+                            onChange={handleContactChange}
+                            required
+                        ></textarea>
+                        <button
+                            type="submit"
+                            className="btn-large btn-glow"
+                            style={{ width: '100%', justifyContent: 'center', marginTop: '1rem' }}
+                            disabled={contactLoading}
+                        >
+                            {contactLoading ? 'Sending...' : 'Send Message'}
                         </button>
                     </form>
                 </div>

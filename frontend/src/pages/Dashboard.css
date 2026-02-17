@@ -543,6 +543,10 @@
 }
 
 /* Mobile Responsiveness */
+.mobile-menu-btn {
+    display: none;
+}
+
 @media (max-width: 768px) {
     .sidebar {
         transform: translateX(-100%);
@@ -643,7 +647,7 @@
 .nurse-header {
     border-bottom-color: #27ae60;
 }
-}
+
 
 /* Hide mobile button on desktop */
 @media (min-width: 769px) {
