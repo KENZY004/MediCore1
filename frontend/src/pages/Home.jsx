@@ -159,7 +159,7 @@ function Home() {
                     <h3 style={{ textAlign: 'center', fontSize: '1.5rem', marginBottom: '2rem', color: '#1e293b' }}>Send Us a Message</h3>
 
                     <form className="contact-form" onSubmit={handleContactSubmit}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div className="form-name-row">
                             <input
                                 type="text"
                                 name="firstName"

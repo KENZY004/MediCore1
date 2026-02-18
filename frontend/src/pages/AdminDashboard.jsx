@@ -283,7 +283,7 @@ function AdminDashboard() {
                                         ) : (
                                             hospitals.map(hospital => (
                                                 <tr key={hospital._id}>
-                                                    <td>
+                                                    <td data-label="Hospital Name">
                                                         <div className="patient-name-cell">
                                                             <div className="avatar-sm">{hospital.name.charAt(0)}</div>
                                                             <div>
@@ -294,15 +294,15 @@ function AdminDashboard() {
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    <td>{hospital.email}</td>
-                                                    <td><span className="badge badge-gray">{hospital.type}</span></td>
-                                                    <td>{hospital.registrationNumber}</td>
-                                                    <td>
+                                                    <td data-label="Email">{hospital.email}</td>
+                                                    <td data-label="Type"><span className="badge badge-gray">{hospital.type}</span></td>
+                                                    <td data-label="Reg. Number">{hospital.registrationNumber}</td>
+                                                    <td data-label="Status">
                                                         <span className={`status-badge status-${hospital.status}`}>
                                                             {hospital.status}
                                                         </span>
                                                     </td>
-                                                    <td>
+                                                    <td data-label="Actions">
                                                         <div className="action-buttons">
                                                             <button
                                                                 className="btn-icon btn-info"
