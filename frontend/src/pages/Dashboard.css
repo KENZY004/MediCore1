@@ -702,8 +702,9 @@
         text-align: left;
     }
 
-    /* Special styling for Hospital Name (First Cell) */
-    .data-table td[data-label="Hospital Name"] {
+    /* Special styling for Hospital Name or Staff Name (First Cell - Header like) */
+    .data-table td[data-label="Hospital Name"],
+    .data-table td[data-label="Name"] {
         flex-direction: column;
         align-items: flex-start;
         gap: 0.5rem;
@@ -716,7 +717,8 @@
         width: calc(100% + 2rem);
     }
 
-    .data-table td[data-label="Hospital Name"]::before {
+    .data-table td[data-label="Hospital Name"]::before,
+    .data-table td[data-label="Name"]::before {
         display: none;
         /* Hide label for name as it's the header */
     }
@@ -725,6 +727,20 @@
         justify-content: center;
         width: 100%;
     }
+
+    /* Container for staff tables - transparent on mobile to let cards float */
+    .staff-table-container {
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0.5rem;
+        /* Give some breathing room if requested */
+    }
+}
+
+.staff-table-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .staff-grid-container {

@@ -232,7 +232,7 @@ function BillingManagement() {
 
             {/* Invoices List */}
             {loading ? <p>Loading data...</p> : (
-                <div className="table-container" style={{ background: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+                <div className="table-container staff-table-container">
                     <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                             <tr style={{ background: '#f8f9fa', textAlign: 'left', borderBottom: '1px solid #eee' }}>
@@ -246,15 +246,15 @@ function BillingManagement() {
                         <tbody>
                             {invoices.map((invoice) => (
                                 <tr key={invoice._id} style={{ borderBottom: '1px solid #eee' }}>
-                                    <td style={{ padding: '1rem', fontWeight: '500', color: '#333' }}>{invoice.patientName}</td>
-                                    <td style={{ padding: '1rem', color: '#666' }}>{new Date(invoice.date).toLocaleDateString()}</td>
-                                    <td style={{ padding: '1rem', fontWeight: '600' }}>₹{invoice.totalAmount}</td>
-                                    <td style={{ padding: '1rem' }}>
+                                    <td style={{ padding: '1rem', fontWeight: '500', color: '#333' }} data-label="Patient Name">{invoice.patientName}</td>
+                                    <td style={{ padding: '1rem', color: '#666' }} data-label="Date">{new Date(invoice.date).toLocaleDateString()}</td>
+                                    <td style={{ padding: '1rem', fontWeight: '600' }} data-label="Total Amount">₹{invoice.totalAmount}</td>
+                                    <td style={{ padding: '1rem' }} data-label="Status">
                                         <span style={statusBadgeStyle(invoice.status)}>
                                             {invoice.status}
                                         </span>
                                     </td>
-                                    <td style={{ padding: '1rem' }}>
+                                    <td style={{ padding: '1rem' }} data-label="Actions">
                                         <div style={{ display: 'flex', gap: '8px' }}>
                                             <button style={btnActionStyle('#e74c3c')} title="Delete" onClick={() => handleDelete(invoice._id)}><FaTrash /></button>
                                         </div>

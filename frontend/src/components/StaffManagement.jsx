@@ -197,8 +197,8 @@ function StaffManagement() {
                         <h3 className="column-header doctor-header">
                             <FaUserMd style={{ color: '#3498db' }} /> Doctors
                         </h3>
-                        <div className="table-responsive" style={{ background: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-                            <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}> {/* minWidth ensures scroll */}
+                        <div className="table-responsive staff-table-container">
+                            <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                                 <thead>
                                     <tr style={{ background: '#f8f9fa', textAlign: 'left', borderBottom: '1px solid #eee' }}>
                                         <th style={{ padding: '1rem' }}>Name</th>
@@ -209,7 +209,7 @@ function StaffManagement() {
                                 <tbody>
                                     {staffList.filter(s => s.role === 'Doctor').map((staff) => (
                                         <tr key={staff._id} style={{ borderBottom: '1px solid #eee' }}>
-                                            <td style={{ padding: '1rem' }}>
+                                            <td style={{ padding: '1rem' }} data-label="Name">
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                     <div style={avatarStyle(true)}>
                                                         {staff.firstName[0]}{staff.lastName[0]}
@@ -220,8 +220,8 @@ function StaffManagement() {
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td style={{ padding: '1rem' }}>{staff.specialization || 'General'}</td>
-                                            <td style={{ padding: '1rem' }}>
+                                            <td style={{ padding: '1rem' }} data-label="Specialization">{staff.specialization || 'General'}</td>
+                                            <td style={{ padding: '1rem' }} data-label="Actions">
                                                 <div style={{ display: 'flex', gap: '8px' }}>
                                                     <button style={btnActionStyle('#f39c12')} title="Edit" onClick={() => handleEdit(staff)}><FaEdit /></button>
                                                     <button style={btnActionStyle('#e74c3c')} title="Delete" onClick={() => handleDelete(staff._id)}><FaTrash /></button>
@@ -242,8 +242,8 @@ function StaffManagement() {
                         <h3 className="column-header nurse-header">
                             <FaUserNurse style={{ color: '#27ae60' }} /> Support Staff
                         </h3>
-                        <div className="table-responsive" style={{ background: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-                            <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
+                        <div className="table-responsive staff-table-container">
+                            <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                                 <thead>
                                     <tr style={{ background: '#f8f9fa', textAlign: 'left', borderBottom: '1px solid #eee' }}>
                                         <th style={{ padding: '1rem' }}>Name</th>
@@ -254,7 +254,7 @@ function StaffManagement() {
                                 <tbody>
                                     {staffList.filter(s => s.role !== 'Doctor').map((staff) => (
                                         <tr key={staff._id} style={{ borderBottom: '1px solid #eee' }}>
-                                            <td style={{ padding: '1rem' }}>
+                                            <td style={{ padding: '1rem' }} data-label="Name">
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                     <div style={avatarStyle(false)}>
                                                         {staff.firstName[0]}{staff.lastName[0]}
@@ -265,7 +265,7 @@ function StaffManagement() {
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td style={{ padding: '1rem' }}>
+                                            <td style={{ padding: '1rem' }} data-label="Role">
                                                 <span className="status-badge" style={{
                                                     background: '#e8f5e9', color: '#2e7d32',
                                                     padding: '4px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase'
@@ -273,7 +273,7 @@ function StaffManagement() {
                                                     {staff.role}
                                                 </span>
                                             </td>
-                                            <td style={{ padding: '1rem' }}>
+                                            <td style={{ padding: '1rem' }} data-label="Actions">
                                                 <div style={{ display: 'flex', gap: '8px' }}>
                                                     <button style={btnActionStyle('#f39c12')} title="Edit" onClick={() => handleEdit(staff)}><FaEdit /></button>
                                                     <button style={btnActionStyle('#e74c3c')} title="Delete" onClick={() => handleDelete(staff._id)}><FaTrash /></button>
