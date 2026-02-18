@@ -2,6 +2,7 @@ const Hospital = require('../models/Hospital');
 const Doctor = require('../models/Doctor');
 const Staff = require('../models/Staff');
 const jwt = require('jsonwebtoken');
+const sendEmail = require('../utils/sendEmail'); // Import sendEmail utility
 
 // Generate JWT Token
 const generateToken = (id) => {
@@ -60,6 +61,85 @@ exports.registerHospital = async (req, res) => {
             description,
             status: 'pending' // Requires admin approval
         });
+
+        // Send Email to Admin
+        try {
+            const adminEmail = process.env.ADMIN_EMAIL;
+            const message = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7fa; }
+        .container { max-width: 600px; margin: 40px auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%); padding: 40px 30px; text-align: center; }
+        .header h1 { color: white; margin: 0; font-size: 28px; font-weight: 600; letter-spacing: 1px; }
+        .content { padding: 40px 30px; }
+        .info-card { background: #f1f8e9; border-left: 4px solid #2e7d32; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .info-row { margin: 15px 0; }
+        .label { color: #558b2f; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+        .value { color: #1e293b; font-size: 16px; font-weight: 500; }
+        .footer { background: #f8fafc; padding: 25px 30px; text-align: center; border-top: 1px solid #e2e8f0; }
+        .footer p { color: #64748b; font-size: 13px; margin: 5px 0; }
+        .btn { display: inline-block; background: #2e7d32; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>New Hospital Registration</h1>
+        </div>
+        <div class="content">
+            <p style="color: #334155; font-size: 16px; line-height: 1.6;">Hello Admin,</p>
+            <p style="color: #334155; font-size: 16px; line-height: 1.6;">A new hospital has registered on the platform and is awaiting your approval.</p>
+            
+            <div class="info-card">
+                <div class="info-row">
+                    <div class="label">Hospital Name</div>
+                    <div class="value">${name}</div>
+                </div>
+                <div class="info-row">
+                    <div class="label">Registration Number</div>
+                    <div class="value">${registrationNumber}</div>
+                </div>
+                <div class="info-row">
+                    <div class="label">Type</div>
+                    <div class="value">${type}</div>
+                </div>
+                <div class="info-row">
+                    <div class="label">Contact Email</div>
+                    <div class="value">${email}</div>
+                </div>
+                 <div class="info-row">
+                    <div class="label">Phone</div>
+                    <div class="value">${phone}</div>
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/admin" class="btn" style="color: #ffffff !important;">Login to Dashboard</a>
+            </div>
+        </div>
+        <div class="footer">
+            <p><strong>ZenoCare Hospital Management System</strong></p>
+            <p>Please review this registration at your earliest convenience.</p>
+        </div>
+    </div>
+</body>
+</html>
+            `;
+
+            await sendEmail({
+                email: adminEmail,
+                subject: '🏥 New Hospital Registration - Action Required',
+                html: message
+            });
+        } catch (emailError) {
+            console.error('❌ Failed to send admin notification email:', emailError);
+            // We don't want to fail registration just because email failed, so we continue
+        }
 
         res.status(201).json({
             success: true,
