@@ -119,7 +119,7 @@ exports.registerHospital = async (req, res) => {
             </div>
 
             <div style="text-align: center;">
-                <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/admin" class="btn" style="color: #ffffff !important;">Login to Dashboard</a>
+                <a href="${process.env.CLIENT_URL}/admin" class="btn" style="color: #ffffff !important;">Login to Dashboard</a>
             </div>
         </div>
         <div class="footer">
