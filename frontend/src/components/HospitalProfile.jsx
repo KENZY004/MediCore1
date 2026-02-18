@@ -78,7 +78,7 @@ function HospitalProfile() {
 
     return (
         <div className="hospital-profile">
-            <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <div className="section-header section-header-flex" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <h2>Hospital Profile</h2>
                 {!editing && (
                     <button className="btn-primary" onClick={() => setEditing(true)} style={{
@@ -93,7 +93,7 @@ function HospitalProfile() {
 
             {editing ? (
                 <div className="card" style={{ padding: '2rem', background: '#fff', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                    <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                    <form onSubmit={handleSubmit} className="profile-edit-grid" style={{ gap: '1.5rem' }}>
                         {/* Basic Info */}
                         <div className="form-group" style={{ gridColumn: 'span 2' }}>
                             <label>Hospital Name</label>
@@ -180,7 +180,7 @@ function HospitalProfile() {
                     </form>
                 </div>
             ) : (
-                <div className="profile-view" style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 2fr', gap: '2rem' }}>
+                <div className="profile-view-grid" style={{ gap: '2rem' }}>
                     {/* Left Column: Key Info */}
                     <div className="card" style={{ padding: '2rem', background: '#fff', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', textAlign: 'center' }}>
                         <div className="hospital-avatar" style={{

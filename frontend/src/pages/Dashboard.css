@@ -547,6 +547,19 @@
     display: none;
 }
 
+/* Hospital Profile Grid (Desktop Defaults) */
+.profile-edit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.profile-view-grid {
+    display: grid;
+    grid-template-columns: minmax(300px, 1fr) 2fr;
+    gap: 2rem;
+}
+
 @media (max-width: 768px) {
     .sidebar {
         transform: translateX(-100%);
@@ -620,6 +633,28 @@
         background: rgba(0, 0, 0, 0.5);
         z-index: 90;
         backdrop-filter: blur(2px);
+    }
+
+    /* Hospital Profile Responsive */
+    .profile-edit-grid,
+    .profile-view-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .profile-view-grid {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .section-header-flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 1rem;
+    }
+
+    .section-header-flex button {
+        width: 100%;
+        justify-content: center;
     }
 
     /* Table to Card Transformation */
