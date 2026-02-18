@@ -67,8 +67,8 @@ function PatientList({ readOnly = false }) {
             </div>
 
             {loading ? <p>Loading patients...</p> : (
-                <div className="table-responsive" style={{ background: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <div className="table-responsive staff-table-container">
+                    <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead style={{ background: '#f8f9fa', color: '#555' }}>
                             <tr>
                                 <th style={{ padding: '1rem', textAlign: 'left' }}>ID</th>
@@ -86,15 +86,15 @@ function PatientList({ readOnly = false }) {
                             ) : (
                                 filteredPatients.map((patient) => (
                                     <tr key={patient._id} style={{ borderBottom: '1px solid #eee' }}>
-                                        <td style={{ padding: '1rem' }}>{patient.patientId || 'N/A'}</td>
-                                        <td style={{ padding: '1rem', fontWeight: 'bold' }}>{patient.firstName} {patient.lastName}</td>
-                                        <td style={{ padding: '1rem' }}>{patient.age || 'N/A'} / {patient.gender}</td>
-                                        <td style={{ padding: '1rem' }}>
+                                        <td style={{ padding: '1rem' }} data-label="ID">{patient.patientId || 'N/A'}</td>
+                                        <td style={{ padding: '1rem', fontWeight: 'bold' }} data-label="Name">{patient.firstName} {patient.lastName}</td>
+                                        <td style={{ padding: '1rem' }} data-label="Age/Gender">{patient.age || 'N/A'} / {patient.gender}</td>
+                                        <td style={{ padding: '1rem' }} data-label="Contact">
                                             <div>{patient.phone}</div>
                                             <div style={{ fontSize: '0.8rem', color: '#888' }}>{patient.email}</div>
                                         </td>
                                         {!readOnly && (
-                                            <td style={{ padding: '1rem', textAlign: 'center' }}>
+                                            <td style={{ padding: '1rem', textAlign: 'center' }} data-label="Actions">
                                                 <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
                                                     <button
                                                         onClick={() => setEditingPatient(patient)}
