@@ -33,8 +33,8 @@ PDF Generation: PDFKit
 
 ## 🚀 Deployment  
 
-Frontend deployed on Render
-Backend deployed on Render  
+Frontend deployed on Render   
+Backend deployed on Render   
 Database hosted on MongoDB Atlas  
 
 ---
