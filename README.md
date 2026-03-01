@@ -51,7 +51,7 @@ zenocare/
 
 ```bash
 git clone https://github.com/KENZY004/ZenoCare
-cd zenocare
+cd zenoCare
 
 cd backend
 npm install
